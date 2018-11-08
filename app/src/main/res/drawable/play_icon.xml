@@ -1,0 +1,59 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="148dp"
+    android:height="148dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+<!--    path circle-->
+    <!--    <path
+        d="
+    M cx cy
+    m -r, 0
+    a r,r 0 1,1 (r * 2),0
+    a r,r 0 1,1 -(r * 2),0
+    "
+        />-->
+    <path
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="@color/background_body"
+        android:strokeLineCap="round"
+        android:pathData="
+    M64,64
+    m -60, 0
+    a 60,60 0 1,1 120,0
+    a 60,60 0 1,1 -120,0
+    "/>
+    <group
+        android:name="@string/play_icon_group_parts"
+        android:pivotX="64"
+        android:pivotY="64"
+        android:scaleX="0.8"
+        android:scaleY="0.8">
+
+        <group android:name="@string/play_icon_group_top">
+            <path
+                android:name="@string/play_icon_top_path_name"
+                android:pathData="@string/play_icon_upper_path_data"
+                android:fillColor="@color/background_body"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeWidth="8"
+                android:strokeColor="@color/background_body"
+                android:strokeMiterLimit="10"/>
+        </group>
+        <group android:name="@string/play_icon_group_bottom">
+            <path
+                android:name="@string/play_icon_bottom_path_name"
+                android:pathData="@string/play_icon_bottom_path_data"
+                android:fillColor="@color/background_body"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"
+                android:strokeWidth="8"
+                android:strokeColor="@color/background_body"
+                android:strokeMiterLimit="10"/>
+        </group>
+
+    </group>
+</vector>
