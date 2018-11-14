@@ -1,12 +1,11 @@
 package com.example.cpu11268.musicapp.Music.Activity;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.drawable.AnimatedVectorDrawable;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,39 +20,62 @@ import com.example.cpu11268.musicapp.Music.Fragment.TrackListFragment;
 import com.example.cpu11268.musicapp.Music.Presenter.PlayMusicPresenter;
 import com.example.cpu11268.musicapp.Music.Views.IPlayMusicContract;
 import com.example.cpu11268.musicapp.R;
-import com.example.cpu11268.musicapp.Runnable.DownloadStreamRealTime;
-import com.example.cpu11268.musicapp.Runnable.SeekBarRunnable;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.Utils.Utils;
 import com.example.imageloader.ImageLoader;
 
 import java.util.List;
 
-public class PlayMusicActivity extends BaseActivity implements Handler.Callback, IPlayMusicContract.View {
-    protected Handler mHandler;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_PLAY;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_SONG;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_SEEKBAR;
+import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAYER;
+import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
+
+public class PlayMusicActivity extends BaseActivity implements IPlayMusicContract.View {
+    Intent intent;
     private ImageView ic_next, ic_pre, ic_play;
-    private MediaPlayer mediaPlayer;
-    private boolean isPrepare = false;
     private SeekBar seekBar;
     private TextView currentTime, maxTime, trackName, artist;
     private ImageView img, list, back;
     private PlayMusicPresenter mPresenter;
-    private SeekBarRunnable seekBarRunnable;
     private Track track;
     private List<Track> tracks;
     private Context context;
     private String idTrack;
+    private String streamUrl;
     private Fragment fragment;
     private AnimatedVectorDrawable playToPause;
     private AnimatedVectorDrawable pauseToPlay;
     private boolean tick = false;
+    private Intent intentIsPlay;
+
+    // Set up broadcast receiver
+    private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent bufferIntent) {
+            showPD(bufferIntent);
+        }
+    };
+    private BroadcastReceiver broadcastSeekBarReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent serviceIntent) {
+            updateUI(serviceIntent);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_music);
+
+        intent = new Intent(BROADCAST_SEEKBAR);
+        intentIsPlay = new Intent(BROADCAST_CHANGE_PLAY);
+        //
+
         context = this;
-        mHandler = new Handler(this);
         playToPause = (AnimatedVectorDrawable) getDrawable(R.drawable.play_to_pause_anim);
         pauseToPlay = (AnimatedVectorDrawable) getDrawable(R.drawable.pause_to_play_anim);
         Intent i = getIntent();
@@ -64,25 +86,39 @@ public class PlayMusicActivity extends BaseActivity implements Handler.Callback,
         mPresenter = new PlayMusicPresenter();
         mPresenter.attachView(this);
         mPresenter.getTracks();
+
         setUpTrack(idTrack);
         listener();
     }
 
-    public void setUpTrack(String idTrack) {
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            seekBar.setSecondaryProgress(0);
-            seekBar.setProgress(0);
-        } else {
-        }
+    private void updateUI(Intent serviceIntent) {
+        int currentPosition = serviceIntent.getIntExtra(CURRENT_POSITION_MEDIA_PLAYER, 0);
+        int durationReceiver = serviceIntent.getIntExtra(DURATION_SONG_MEDIA_PLAYER, 0);
+        int seekProgress = currentPosition;
+        currentTime.setText(Utils.getInstance().millisecondsToString(currentPosition));
+        int duration = durationReceiver;
+        maxTime.setText(Utils.getInstance().millisecondsToString(duration));
+        seekBar.setMax(duration);
+        seekBar.setProgress(seekProgress);
+    }
 
-        if (seekBarRunnable != null) {
-            mHandler.removeCallbacks(seekBarRunnable);
-        }
+    private void showPD(Intent bufferIntent) {
+        int bufferValue = bufferIntent.getIntExtra("bufferingUpdateProgress", 0);
+        seekBar.setSecondaryProgress(bufferValue);
+    }
+
+    //
+    public void setUpTrack(String idTrack) {
         seekBar.setSecondaryProgress(0);
+        seekBar.setProgress(0);
         mPresenter.getTrack(idTrack, this);
     }
 
+    private void changeSong(String streamSong) {
+        Intent intent = new Intent(BROADCAST_CHANGE_SONG);
+        intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, streamSong);
+        sendBroadcast(intent);
+    }
 
     private void listener() {
         ic_play.setOnClickListener(new View.OnClickListener() {
@@ -93,14 +129,10 @@ public class PlayMusicActivity extends BaseActivity implements Handler.Callback,
                 drawable.start();
                 tick = !tick;
                 if (ic_play.isSelected()) {
-                    if (isPrepare) {
-                        play();
-                    }
+                    play();
                     ic_play.setSelected(false);
                 } else {
-                    if (isPrepare) {
-                        pause();
-                    }
+                    pause();
                     ic_play.setSelected(true);
                 }
             }
@@ -126,14 +158,12 @@ public class PlayMusicActivity extends BaseActivity implements Handler.Callback,
             public void onClick(View v) {
                 Track track = DataTrack.getInstance().getTrackNextInList(idTrack);
                 if (track != null) {
+
                     idTrack = track.getId();
-                    if (seekBarRunnable != null) {
-                        mHandler.removeCallbacks(seekBarRunnable);
-                    }
-                    mediaPlayer.release();
+                    streamUrl = track.getStreamUrl();
+                    changeSong(streamUrl);
                     seekBar.setSecondaryProgress(0);
                     seekBar.setProgress(0);
-                    mPresenter.getTrack(idTrack, context);
                 }
             }
         });
@@ -144,28 +174,25 @@ public class PlayMusicActivity extends BaseActivity implements Handler.Callback,
                 Track track = DataTrack.getInstance().getTrackPreInList(idTrack);
                 if (track != null) {
                     idTrack = track.getId();
-                    if (seekBarRunnable != null) {
-                        mHandler.removeCallbacks(seekBarRunnable);
-                    }
-                    mediaPlayer.release();
+                    streamUrl = track.getStreamUrl();
+                    changeSong(streamUrl);
                     seekBar.setSecondaryProgress(0);
                     seekBar.setProgress(0);
-                    mPresenter.getTrack(idTrack, context);
-
                 }
             }
         });
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int mProgress;
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (!isPrepare) {
-                    return;
+                if (fromUser) {
+                    int seekPos = progress;
+                    Log.d("PlayMusicActivity: ", progress + " " + seekBar.getProgress());
+                    intent.putExtra(Constant.STRING_UPDATE_SEEK_MEDIA_FROM_ACTIVITY, seekPos);
+                    sendBroadcast(intent);
+
                 }
-                mProgress = progress;
-                currentTime.setText(Utils.getInstance().millisecondsToString(mProgress));
 
             }
 
@@ -176,76 +203,33 @@ public class PlayMusicActivity extends BaseActivity implements Handler.Callback,
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (!isPrepare) {
-                    seekBar.setProgress(0);
-                    return;
-                }
-                seekBar.setProgress(mProgress);
-                mediaPlayer.seekTo(mProgress);
             }
         });
     }
 
-    private void pause() {
-        mediaPlayer.pause();
-        mHandler.removeCallbacks(seekBarRunnable);
-
-    }
-
     private void play() {
-        int currentPosition = seekBar.getProgress();
-        mediaPlayer.seekTo(currentPosition);
-        mediaPlayer.start();
-        // Tạo một thread để update trạng thái của SeekBar.
-        seekBarRunnable = new SeekBarRunnable(mediaPlayer, seekBar, mHandler, currentTime, Integer.parseInt(track.getDuration()));
-        mHandler.postDelayed(seekBarRunnable, 50);
+        intentIsPlay.putExtra("isPlay", true);
+        sendBroadcast(intentIsPlay);
     }
 
-    @Override
-    public boolean handleMessage(Message msg) {
-        if (msg.what == Constant.FINISH_DOWNLOAD_STREAM) {
-
-            if (!ic_play.isSelected()) {
-                // Tạo một thread để update trạng thái của SeekBar.
-                seekBarRunnable = new SeekBarRunnable(mediaPlayer, seekBar, mHandler, currentTime, Integer.parseInt(track.getDuration()));
-                mHandler.postDelayed(seekBarRunnable, 50);
-            }
-
-
-            isPrepare = true;
-        }
-        return true;
+    private void pause() {
+        intentIsPlay.putExtra("isPlay", false);
+        sendBroadcast(intentIsPlay);
     }
 
     @Override
     public void showData(final Track track) {
-        isPrepare = false;
         this.track = track;
-        mediaPlayer = new MediaPlayer();
+        registerReceiver(broadcastBufferReceiver, new IntentFilter(BROADCAST_BUFFER));
+        registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_ACTION));
 
         seekBar.setProgress(0);
         seekBar.setMax(Integer.parseInt(track.getDuration()));
-        mediaPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
-            @Override
-            public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                int progress = (int) (((float) percent / 100) * Integer.parseInt(track.getDuration()));
-                seekBar.setSecondaryProgress(progress);
-            }
-        });
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                ic_play.setSelected(true);
-                mediaPlayer.seekTo(0);
-                mediaPlayer.pause();
-            }
-        });
+        changeSong(track.getStreamUrl());
+
         trackName.setText(track.getName());
         artist.setText(track.getArtist());
         maxTime.setText(Utils.getInstance().millisecondsToString(Integer.parseInt(track.getDuration())));
-
-        DownloadStreamRealTime downloadStreamRealTime = new DownloadStreamRealTime(mHandler, mediaPlayer, track.getStreamUrl());
-        new Thread(downloadStreamRealTime).start();
         if (!TextUtils.isEmpty(track.getmImage()) && track.getmImage() != "null") {
             ImageLoader.getInstance().loadImageWorker(this, track.getmImage(), img, "");
         }
@@ -286,9 +270,11 @@ public class PlayMusicActivity extends BaseActivity implements Handler.Callback,
 
     @Override
     protected void onDestroy() {
+        unregisterReceiver(broadcastBufferReceiver);
+        unregisterReceiver(broadcastSeekBarReceiver);
         Log.d("PlayMusicActivity", "DESTROY");
-        mHandler.removeCallbacks(seekBarRunnable);
-        mediaPlayer.release();
         super.onDestroy();
     }
+
+
 }
