@@ -20,6 +20,7 @@ import com.example.cpu11268.musicapp.Music.Fragment.TrackListFragment;
 import com.example.cpu11268.musicapp.Music.Presenter.PlayMusicPresenter;
 import com.example.cpu11268.musicapp.Music.Views.IPlayMusicContract;
 import com.example.cpu11268.musicapp.R;
+import com.example.cpu11268.musicapp.Service.PlaySongService;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.Utils.Utils;
 import com.example.imageloader.ImageLoader;
@@ -30,9 +31,12 @@ import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_PLAY;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_SONG;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_NEXT_SONG;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_PRE_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_SEEKBAR;
 import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
+import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 
 public class PlayMusicActivity extends BaseActivity implements IPlayMusicContract.View {
     Intent intent;
@@ -52,6 +56,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private Intent intentIsPlay;
 
     private boolean mIsPlay = true;
+    private Intent intentService;
 
     // Set up broadcast receiver
     private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
@@ -76,6 +81,9 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
     private void updateUI(Intent serviceIntent) {
         boolean isPlay = serviceIntent.getBooleanExtra("updateUi", false);
+        if (mIsPlay == isPlay) {
+            return;
+        }
         AnimatedVectorDrawable drawable = isPlay ? playToPause : pauseToPlay;
         ic_play.setImageDrawable(drawable);
         drawable.start();
@@ -88,31 +96,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_play_music);
-
-        intent = new Intent(BROADCAST_SEEKBAR);
-        intentIsPlay = new Intent(BROADCAST_CHANGE_PLAY);
-        //
-
-        context = this;
-        playToPause = (AnimatedVectorDrawable) getDrawable(R.drawable.play_to_pause_anim);
-        pauseToPlay = (AnimatedVectorDrawable) getDrawable(R.drawable.pause_to_play_anim);
-        Intent i = getIntent();
-        initFindViewById();
-        fragment = new TrackListFragment();
-        idTrack = i.getStringExtra(Constant.DATA_TRACK);
-
-        mPresenter = new PlayMusicPresenter();
-        mPresenter.attachView(this);
-        mPresenter.getTracks();
-
-
-        setUpTrack(idTrack);
-        listener();
-    }
 
     private void updateUISeekbar(Intent serviceIntent) {
         int currentPosition = serviceIntent.getIntExtra(CURRENT_POSITION_MEDIA_PLAYER, 0);
@@ -124,6 +107,34 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         seekBar.setMax(duration);
         seekBar.setProgress(seekProgress);
     }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_play_music);
+
+        Intent i = getIntent();
+        idTrack = i.getStringExtra(Constant.DATA_TRACK);
+
+        intent = new Intent(BROADCAST_SEEKBAR);
+        intentIsPlay = new Intent(BROADCAST_CHANGE_PLAY);
+        //
+
+        context = this;
+        playToPause = (AnimatedVectorDrawable) getDrawable(R.drawable.play_to_pause_anim);
+        pauseToPlay = (AnimatedVectorDrawable) getDrawable(R.drawable.pause_to_play_anim);
+        initFindViewById();
+        fragment = new TrackListFragment();
+
+        mPresenter = new PlayMusicPresenter();
+        mPresenter.attachView(this);
+        mPresenter.getTracks();
+
+
+        setUpTrack(idTrack);
+        listener();
+    }
+
 
     private void showPD(Intent bufferIntent) {
         int bufferValue = bufferIntent.getIntExtra("bufferingUpdateProgress", 0);
@@ -137,10 +148,36 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         mPresenter.getTrack(idTrack, this);
     }
 
-    private void changeSong(String streamSong) {
+    private void nextSong(){
+        Intent intent = new Intent(BROADCAST_NEXT_SONG);
+        if (!mIsPlay) {
+            AnimatedVectorDrawable drawable = playToPause;
+            ic_play.setImageDrawable(drawable);
+            drawable.start();
+        }
+        mIsPlay = true;
+
+        sendBroadcast(intent);
+    }
+
+    private void preSong(){
+        Intent intent = new Intent(BROADCAST_PRE_SONG);
+        if (!mIsPlay) {
+            AnimatedVectorDrawable drawable = playToPause;
+            ic_play.setImageDrawable(drawable);
+            drawable.start();
+        }
+        mIsPlay = true;
+
+        sendBroadcast(intent);
+    }
+
+    private void changeSong(String streamSong, String id) {
         Intent intent = new Intent(BROADCAST_CHANGE_SONG);
         intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, streamSong);
-        if(!mIsPlay){
+        intent.putExtra(EXTRA_DATA, id);
+
+        if (!mIsPlay) {
             AnimatedVectorDrawable drawable = playToPause;
             ic_play.setImageDrawable(drawable);
             drawable.start();
@@ -189,7 +226,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
                     idTrack = track.getId();
                     streamUrl = track.getStreamUrl();
-                    changeSong(streamUrl);
+//                    changeSong(streamUrl);
+                    nextSong();
                     seekBar.setSecondaryProgress(0);
                     seekBar.setProgress(0);
                 }
@@ -203,7 +241,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
                 if (track != null) {
                     idTrack = track.getId();
                     streamUrl = track.getStreamUrl();
-                    changeSong(streamUrl);
+//                    changeSong(streamUrl);
+                    preSong();
                     seekBar.setSecondaryProgress(0);
                     seekBar.setProgress(0);
                 }
@@ -254,7 +293,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
         seekBar.setProgress(0);
         seekBar.setMax(Integer.parseInt(track.getDuration()));
-        changeSong(track.getStreamUrl());
+        changeSong(track.getStreamUrl(), track.getId());
 
         trackName.setText(track.getName());
         artist.setText(track.getArtist());
