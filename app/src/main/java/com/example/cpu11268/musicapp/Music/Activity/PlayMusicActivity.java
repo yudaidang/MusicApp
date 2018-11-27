@@ -49,8 +49,9 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private Fragment fragment;
     private AnimatedVectorDrawable playToPause;
     private AnimatedVectorDrawable pauseToPlay;
-    private boolean tick = false;
     private Intent intentIsPlay;
+
+    private boolean mIsPlay = true;
 
     // Set up broadcast receiver
     private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
@@ -62,9 +63,30 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private BroadcastReceiver broadcastSeekBarReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent serviceIntent) {
+            updateUISeekbar(serviceIntent);
+        }
+    };
+
+    private BroadcastReceiver broadcastUpdateUi = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent serviceIntent) {
             updateUI(serviceIntent);
         }
     };
+
+    private void updateUI(Intent serviceIntent) {
+        boolean isPlay = serviceIntent.getBooleanExtra("updateUi", false);
+        AnimatedVectorDrawable drawable = isPlay ? playToPause : pauseToPlay;
+        ic_play.setImageDrawable(drawable);
+        drawable.start();
+        if (isPlay) {
+            mIsPlay = true;
+            ic_play.setSelected(false);
+        } else {
+            mIsPlay = false;
+            ic_play.setSelected(true);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,11 +109,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         mPresenter.attachView(this);
         mPresenter.getTracks();
 
+
         setUpTrack(idTrack);
         listener();
     }
 
-    private void updateUI(Intent serviceIntent) {
+    private void updateUISeekbar(Intent serviceIntent) {
         int currentPosition = serviceIntent.getIntExtra(CURRENT_POSITION_MEDIA_PLAYER, 0);
         int durationReceiver = serviceIntent.getIntExtra(DURATION_SONG_MEDIA_PLAYER, 0);
         int seekProgress = currentPosition;
@@ -117,24 +140,29 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private void changeSong(String streamSong) {
         Intent intent = new Intent(BROADCAST_CHANGE_SONG);
         intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, streamSong);
+        if(!mIsPlay){
+            AnimatedVectorDrawable drawable = playToPause;
+            ic_play.setImageDrawable(drawable);
+            drawable.start();
+        }
+        mIsPlay = true;
+
         sendBroadcast(intent);
+    }
+
+    private void changePlay() {
+        if (ic_play.isSelected()) {
+            play();
+        } else {
+            pause();
+        }
     }
 
     private void listener() {
         ic_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AnimatedVectorDrawable drawable = tick ? playToPause : pauseToPlay;
-                ic_play.setImageDrawable(drawable);
-                drawable.start();
-                tick = !tick;
-                if (ic_play.isSelected()) {
-                    play();
-                    ic_play.setSelected(false);
-                } else {
-                    pause();
-                    ic_play.setSelected(true);
-                }
+                changePlay();
             }
         });
         back.setOnClickListener(new View.OnClickListener() {
@@ -222,6 +250,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         this.track = track;
         registerReceiver(broadcastBufferReceiver, new IntentFilter(BROADCAST_BUFFER));
         registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_ACTION));
+        registerReceiver(broadcastUpdateUi, new IntentFilter("UPDATE_UI_COMMUNICATE"));
 
         seekBar.setProgress(0);
         seekBar.setMax(Integer.parseInt(track.getDuration()));
@@ -272,6 +301,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     protected void onDestroy() {
         unregisterReceiver(broadcastBufferReceiver);
         unregisterReceiver(broadcastSeekBarReceiver);
+        unregisterReceiver(broadcastUpdateUi);
         Log.d("PlayMusicActivity", "DESTROY");
         super.onDestroy();
     }

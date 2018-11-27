@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:src="@mipmap/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:dividerPadding="12dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:showDividers="middle"
+                >
+
+                <TextView
+                    android:id="@+id/nameSong"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:text="Chạy ngay đi"
+                    android:textColor="@android:color/black"
+                    android:textSize="15sp"
+                    />
+                <Button
+                    android:id="@+id/pre"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:backgroundTint="@android:color/black"
+                    android:background="@drawable/ic_pre"/>
+                <Button
+                    android:id="@+id/play"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:backgroundTint="@android:color/black"
+                    android:background="@drawable/state_notification"/>
+                <Button
+                    android:id="@+id/next"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:backgroundTint="@android:color/black"
+                    android:background="@drawable/ic_next"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

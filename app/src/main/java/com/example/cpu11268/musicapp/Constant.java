@@ -15,6 +15,7 @@ public class Constant {
 
     public static final String BROADCAST_CHANGE_SONG= "BROADCAST_CHANGE_SONG";
     public static final String BROADCAST_CHANGE_PLAY= "BROADCAST_CHANGE_PLAY";
+    public static final String BROADCAST_NOTIFICATION= "BROADCAST_NOTIFICATION";
 
 
 

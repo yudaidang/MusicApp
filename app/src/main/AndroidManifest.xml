@@ -30,6 +30,15 @@
             android:name=".Service.PlaySongService"
             android:enabled="true"
             android:exported="true"></service>
+        <receiver android:name=".Notification.NotificationBroadcast" >
+            <intent-filter>
+                <action android:name="com.example.cpu11268.musicapp.Notification.previous" />
+                <action android:name="com.example.cpu11268.musicapp.Notification.delete" />
+                <action android:name="com.example.cpu11268.musicapp.Notification.pause" />
+                <action android:name="com.example.cpu11268.musicapp.Notification.next" />
+                <action android:name="com.example.cpu11268.musicapp.Notification.play" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
