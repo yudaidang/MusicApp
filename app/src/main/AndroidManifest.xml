@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -30,7 +30,6 @@
 
         <service
             android:name=".Service.PlaySongService"
-            android:enabled="true"
             android:exported="true"></service>
         <receiver android:name=".Notification.NotificationBroadcast" >
             <intent-filter>

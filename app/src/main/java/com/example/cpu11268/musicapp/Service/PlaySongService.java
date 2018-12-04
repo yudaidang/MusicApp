@@ -11,6 +11,8 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.cpu11268.musicapp.Constant;
@@ -30,17 +32,19 @@ import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAY
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_SONG_CHANGE_STREAM;
+import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.cancelNoti;
 
 public class PlaySongService extends Service implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
         MediaPlayer.OnInfoListener, MediaPlayer.OnBufferingUpdateListener,
         Handler.Callback {
     private static final int NOTIFICATION_ID = 1;
+    WindowManager mWindowManager;
+    View mView;
     private boolean isPrepare = false;
     private boolean mIsPlay = true;
     private String idSong;
     private String streamSong;
-
     private int duration;
     private Handler handler;
     private MediaPlayer mediaPlayer = new MediaPlayer();
@@ -50,6 +54,8 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private Intent seekIntent;
     private Intent bufferIntent;
     private Intent updateUi;
+    private Intent updateInfoSong;
+
     private Runnable sendUpdatesToUI = new Runnable() {
         public void run() {
             LogMediaPosition();
@@ -110,7 +116,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     }
 
-    private void nextSong(){
+    private void nextSong() {
         Track track = DataTrack.getInstance().getTrackNextInList(idSong);
         if (track != null) {
             idSong = track.getId();
@@ -118,10 +124,15 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
         mIsPlay = true;
         mediaPlayer.reset();
+
+        updateInfoSong.putExtra(EXTRA_DATA, track);
+        sendBroadcast(updateInfoSong);
+        NotificationGenerator.updateInfo(track);
+
         setStreamSong(streamSong);
     }
 
-    private void preSong(){
+    private void preSong() {
         Track track = DataTrack.getInstance().getTrackPreInList(idSong);
         if (track != null) {
             idSong = track.getId();
@@ -129,16 +140,23 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
         mIsPlay = true;
         mediaPlayer.reset();
+
+        updateInfoSong.putExtra(EXTRA_DATA, track);
+        sendBroadcast(updateInfoSong);
+        NotificationGenerator.updateInfo(track);
+
         setStreamSong(streamSong);
     }
 
     private void updateSong(Intent intent) {
-        String stream = intent.getStringExtra(UPDATE_SONG_CHANGE_STREAM);
-        String id = intent.getStringExtra(EXTRA_DATA);
+        NotificationGenerator.customBigNotification(this);
+
+        Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
         mIsPlay = true;
         mediaPlayer.reset();
-        streamSong = stream;
-        idSong = id;
+        streamSong = track.getStreamUrl();
+        idSong = track.getId();
+        NotificationGenerator.updateInfo(track);
         setStreamSong(streamSong);
     }
 
@@ -187,9 +205,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         super.onCreate();
 
 
-
         bufferIntent = new Intent(BROADCAST_BUFFER);
         updateUi = new Intent("UPDATE_UI_COMMUNICATE");
+        updateInfoSong = new Intent("UPDATEINFO");
         //set up intent seek for seekbar broadcast
         seekIntent = new Intent(BROADCAST_ACTION);
         mediaPlayer.setOnCompletionListener(this);
@@ -200,6 +218,14 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         mediaPlayer.setOnInfoListener(this);
         mediaPlayer.reset();
 
+
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Log.d("YUDAIDANG", "onDestroy");
+
+        super.onTaskRemoved(rootIntent);
     }
 
     @Override
@@ -207,9 +233,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
         handler = new Handler(this);
 
-//        idSong = intent.getStringExtra(EXTRA_DATA);
-
-        NotificationGenerator.customBigNotification(this);
         //setup receiver for seekbar change
         registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_SEEKBAR));
         registerReceiver(bReceiverChangeSong, new IntentFilter(BROADCAST_CHANGE_SONG));
@@ -225,6 +248,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void onDestroy() {
+        Log.d("YUDAIDANG", "onDestroy");
         super.onDestroy();
         if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {
@@ -240,8 +264,11 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         unregisterReceiver(bReceiverNextSong);
         unregisterReceiver(bReceiverPreSong);
 
+        cancelNoti();
+
         handler.removeCallbacks(sendUpdatesToUI);
     }
+
 
     @Nullable
     @Override
@@ -313,9 +340,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             setupHandler();
             isPrepare = true;
             Log.d("MISPLAY", " " + mIsPlay);
-            if(mIsPlay){
+            if (mIsPlay) {
                 playMedia();
-            }else{
+            } else {
                 pauseMedia();
             }
         }

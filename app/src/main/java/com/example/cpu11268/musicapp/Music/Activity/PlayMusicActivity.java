@@ -65,6 +65,14 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             showPD(bufferIntent);
         }
     };
+
+    private BroadcastReceiver broadcastUpdateInfo = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent bufferIntent) {
+            updateInfo(bufferIntent);
+        }
+    };
+
     private BroadcastReceiver broadcastSeekBarReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent serviceIntent) {
@@ -94,6 +102,14 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             mIsPlay = false;
             ic_play.setSelected(true);
         }
+    }
+
+    private void updateInfo(Intent serviceIntent) {
+        Track track = (Track) serviceIntent.getSerializableExtra(EXTRA_DATA);
+        trackName.setText(track.getName());
+        artist.setText(track.getArtist());
+        ImageLoader.getInstance().loadImageWorker(this, track.getmImage(), img, "");
+
     }
 
 
@@ -172,10 +188,9 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         sendBroadcast(intent);
     }
 
-    private void changeSong(String streamSong, String id) {
+    private void changeSong(Track track) {
         Intent intent = new Intent(BROADCAST_CHANGE_SONG);
-        intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, streamSong);
-        intent.putExtra(EXTRA_DATA, id);
+        intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
 
         if (!mIsPlay) {
             AnimatedVectorDrawable drawable = playToPause;
@@ -290,10 +305,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         registerReceiver(broadcastBufferReceiver, new IntentFilter(BROADCAST_BUFFER));
         registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_ACTION));
         registerReceiver(broadcastUpdateUi, new IntentFilter("UPDATE_UI_COMMUNICATE"));
+        registerReceiver(broadcastUpdateInfo, new IntentFilter("UPDATEINFO"));
+
 
         seekBar.setProgress(0);
         seekBar.setMax(Integer.parseInt(track.getDuration()));
-        changeSong(track.getStreamUrl(), track.getId());
+        changeSong(track);
 
         trackName.setText(track.getName());
         artist.setText(track.getArtist());
@@ -307,6 +324,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     public void getAllData(List<Track> tracks) {
         this.tracks = tracks;
     }
+
+
 
     @Override
     public void initFindViewById() {
@@ -338,9 +357,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
     @Override
     protected void onDestroy() {
+        Log.d("YUDAIDANG", "onDestroy");
+
         unregisterReceiver(broadcastBufferReceiver);
         unregisterReceiver(broadcastSeekBarReceiver);
         unregisterReceiver(broadcastUpdateUi);
+        unregisterReceiver(broadcastUpdateInfo);
         Log.d("PlayMusicActivity", "DESTROY");
         super.onDestroy();
     }
