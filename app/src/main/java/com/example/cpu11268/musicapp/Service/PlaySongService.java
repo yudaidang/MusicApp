@@ -1,18 +1,16 @@
 package com.example.cpu11268.musicapp.Service;
 
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.cpu11268.musicapp.Constant;
@@ -23,11 +21,6 @@ import com.example.cpu11268.musicapp.Utils.DataTrack;
 
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
-import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_PLAY;
-import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_SONG;
-import static com.example.cpu11268.musicapp.Constant.BROADCAST_NEXT_SONG;
-import static com.example.cpu11268.musicapp.Constant.BROADCAST_PRE_SONG;
-import static com.example.cpu11268.musicapp.Constant.BROADCAST_SEEKBAR;
 import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
@@ -36,11 +29,8 @@ import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.c
 
 public class PlaySongService extends Service implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnSeekCompleteListener,
-        MediaPlayer.OnInfoListener, MediaPlayer.OnBufferingUpdateListener,
+        MediaPlayer.OnInfoListener, MediaPlayer.OnBufferingUpdateListener, IPlaySongContract, AudioManager.OnAudioFocusChangeListener,
         Handler.Callback {
-    private static final int NOTIFICATION_ID = 1;
-    WindowManager mWindowManager;
-    View mView;
     private boolean isPrepare = false;
     private boolean mIsPlay = true;
     private String idSong;
@@ -48,6 +38,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private int duration;
     private Handler handler;
     private MediaPlayer mediaPlayer = new MediaPlayer();
+    private IBinder binder;
     // Seekbar
     private int mediaPosition;
     //Intent
@@ -55,7 +46,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private Intent bufferIntent;
     private Intent updateUi;
     private Intent updateInfoSong;
-
+    private PlaySongPresenter playSongPresenter;
     private Runnable sendUpdatesToUI = new Runnable() {
         public void run() {
             LogMediaPosition();
@@ -64,50 +55,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
     };
 
-    private BroadcastReceiver receiverChangePlay = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            changePlay();
-        }
-    };
-    //1. listener when change song.
-    private BroadcastReceiver bReceiverChangeSong = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            updateSong(intent);
-        }
-    };
 
-    private BroadcastReceiver bReceiverNextSong = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            nextSong();
-        }
-    };
-
-    private BroadcastReceiver bReceiverPreSong = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            preSong();
-        }
-    };
-
-    // --Receive seekbar position if it has been changed by the user in the activity
-    // --Nhận vị trí của seekbar nếu nó thay đổi tại activity.
-    private BroadcastReceiver broadcastSeekBarReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            updateSeekPos(intent);
-        }
-    };
-
-    public PlaySongService() {
-    }
-
-    private void changePlay() {
-        if (!isPrepare) {
-            return;
-        }
+    @Override
+    public void changePlay() {
         if (mediaPlayer.isPlaying()) {
             pauseMedia();
         } else {
@@ -116,13 +66,18 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     }
 
-    private void nextSong() {
+    @Override
+    public void nextSong() {
+        isPrepare = false;
         Track track = DataTrack.getInstance().getTrackNextInList(idSong);
         if (track != null) {
             idSong = track.getId();
             streamSong = track.getStreamUrl();
         }
         mIsPlay = true;
+        handler.postDelayed(sendUpdatesToUI, 50);
+        updateUi.putExtra("updateUi", true);
+        sendBroadcast(updateUi);
         mediaPlayer.reset();
 
         updateInfoSong.putExtra(EXTRA_DATA, track);
@@ -132,13 +87,18 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         setStreamSong(streamSong);
     }
 
-    private void preSong() {
+    @Override
+    public void preSong() {
+        isPrepare = false;
         Track track = DataTrack.getInstance().getTrackPreInList(idSong);
         if (track != null) {
             idSong = track.getId();
             streamSong = track.getStreamUrl();
         }
         mIsPlay = true;
+        handler.postDelayed(sendUpdatesToUI, 50);
+        updateUi.putExtra("updateUi", true);
+        sendBroadcast(updateUi);
         mediaPlayer.reset();
 
         updateInfoSong.putExtra(EXTRA_DATA, track);
@@ -148,11 +108,15 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         setStreamSong(streamSong);
     }
 
-    private void updateSong(Intent intent) {
+    @Override
+    public void updateSong(Intent intent) {
+        isPrepare = false;
         NotificationGenerator.customBigNotification(this);
-
         Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
         mIsPlay = true;
+        handler.postDelayed(sendUpdatesToUI, 50);
+        updateUi.putExtra("updateUi", true);
+        sendBroadcast(updateUi);
         mediaPlayer.reset();
         streamSong = track.getStreamUrl();
         idSong = track.getId();
@@ -168,8 +132,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         new Thread(downloadStreamRealTime).start();
     }
 
-    // Update seek position from Activity
-    // Cập nhật vị trí của seek mediaplayer từ activity.
+    @Override
     public void updateSeekPos(Intent intent) {
         int seekPos = intent.getIntExtra(Constant.STRING_UPDATE_SEEK_MEDIA_FROM_ACTIVITY, 0);
         Log.d("PlaySongService", seekPos + "");
@@ -180,12 +143,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     }
 
-    //////////////////////////////////////////////
-
     private void LogMediaPosition() {
         if (mediaPlayer.isPlaying()) {
             mediaPosition = mediaPlayer.getCurrentPosition();
-            Log.d("PlaySongService2", mediaPosition + " " + duration);
             if (!isPrepare) {
                 mediaPosition = 0;
             }
@@ -203,8 +163,59 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d("onCreate", " PlaySongPresenter");
+
+        playSongPresenter = new PlaySongPresenter(this, this);
+
+        binder = new MyBinder(); // do MyBinder được extends Binder
+
+        if (!successfullyRetrievedAudioFocus()) {
+            return;
+        }
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Log.d("YUDAIDANG", "onDestroy");
+        stopSelf();
+        cancelNoti();
+
+        super.onTaskRemoved(rootIntent);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+        // Insert notification start
+        return START_STICKY;
+
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.d("ServiceDemo", "Đã gọi onBind()");
+        mediaPlayer.stop();
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            mediaPlayer.release();
+        }
+        playSongPresenter.unregister();
+
+        handler.removeCallbacks(sendUpdatesToUI);
+    }
 
 
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
         bufferIntent = new Intent(BROADCAST_BUFFER);
         updateUi = new Intent("UPDATE_UI_COMMUNICATE");
         updateInfoSong = new Intent("UPDATEINFO");
@@ -218,63 +229,12 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         mediaPlayer.setOnInfoListener(this);
         mediaPlayer.reset();
 
-
-    }
-
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        Log.d("YUDAIDANG", "onDestroy");
-
-        super.onTaskRemoved(rootIntent);
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
         handler = new Handler(this);
 
-        //setup receiver for seekbar change
-        registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_SEEKBAR));
-        registerReceiver(bReceiverChangeSong, new IntentFilter(BROADCAST_CHANGE_SONG));
-        registerReceiver(receiverChangePlay, new IntentFilter(BROADCAST_CHANGE_PLAY));
-        registerReceiver(bReceiverNextSong, new IntentFilter(BROADCAST_NEXT_SONG));
-        registerReceiver(bReceiverPreSong, new IntentFilter(BROADCAST_PRE_SONG));
-
-
-        // Insert notification start
-        return START_STICKY;
+        return binder;
 
     }
 
-    @Override
-    public void onDestroy() {
-        Log.d("YUDAIDANG", "onDestroy");
-        super.onDestroy();
-        if (mediaPlayer != null) {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.stop();
-            }
-            mediaPlayer.release();
-        }
-
-        //unregister seekbar receiver
-        unregisterReceiver(bReceiverChangeSong);
-        unregisterReceiver(receiverChangePlay);
-        unregisterReceiver(broadcastSeekBarReceiver);
-        unregisterReceiver(bReceiverNextSong);
-        unregisterReceiver(bReceiverPreSong);
-
-        cancelNoti();
-
-        handler.removeCallbacks(sendUpdatesToUI);
-    }
-
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
@@ -302,10 +262,26 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public void onPrepared(MediaPlayer mp) {
         duration = mediaPlayer.getDuration();
-        playMedia();
+        isPrepare = true;
     }
 
+    @Override
     public void playMedia() {
+
+        if (!isPrepare) {
+            handler.postDelayed(sendUpdatesToUI, 50);
+            if (mIsPlay) {
+                updateUi.putExtra("updateUi", false);
+                sendBroadcast(updateUi);
+                mIsPlay = false;
+                return;
+            }
+            updateUi.putExtra("updateUi", true);
+            sendBroadcast(updateUi);
+            mIsPlay = true;
+            return;
+        }
+
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             handler.postDelayed(sendUpdatesToUI, 50);
@@ -315,12 +291,27 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
     }
 
+    @Override
     public void pauseMedia() {
+        if (!isPrepare) {
+            handler.postDelayed(sendUpdatesToUI, 50);
+            if (mIsPlay) {
+                updateUi.putExtra("updateUi", false);
+                sendBroadcast(updateUi);
+                mIsPlay = false;
+                return;
+            }
+            updateUi.putExtra("updateUi", true);
+            sendBroadcast(updateUi);
+            mIsPlay = true;
+            return;
+        }
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             updateUi.putExtra("updateUi", false);
             sendBroadcast(updateUi);
             mIsPlay = false;
+
         }
 
     }
@@ -338,8 +329,8 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     public boolean handleMessage(Message msg) {
         if (msg.what == Constant.FINISH_DOWNLOAD_STREAM) {
             setupHandler();
-            isPrepare = true;
-            Log.d("MISPLAY", " " + mIsPlay);
+            handler.postDelayed(sendUpdatesToUI, 50);
+
             if (mIsPlay) {
                 playMedia();
             } else {
@@ -347,5 +338,49 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             }
         }
         return true;
+    }
+
+    private boolean successfullyRetrievedAudioFocus() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+
+        int result = audioManager.requestAudioFocus(this,
+                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
+        return result == AudioManager.AUDIOFOCUS_GAIN;
+    }
+
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_LOSS: {
+                pauseMedia();
+                break;
+            }
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: {
+                pauseMedia();
+                break;
+            }
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: {
+                if (mediaPlayer != null) {
+                    mediaPlayer.setVolume(0.1f, 0.1f);
+                }
+                break;
+            }
+            case AudioManager.AUDIOFOCUS_GAIN: {
+                if (mediaPlayer != null) {
+                    playMedia();
+                    mediaPlayer.setVolume(1.0f, 1.0f);
+                }
+                break;
+            }
+        }
+    }
+
+    //ADDDDD
+    public class MyBinder extends Binder {
+        public PlaySongService getService() {
+            return PlaySongService.this;
+        }
     }
 }

@@ -14,9 +14,9 @@ public class NotificationBroadcast extends BroadcastReceiver {
     private Intent intentNext = new Intent(BROADCAST_NEXT_SONG);
     private Intent intentPre = new Intent(BROADCAST_PRE_SONG);
 
-
     @Override
     public void onReceive(Context context, Intent intent) {
+
         if (intent.getAction().equals(NotificationGenerator.NOTIFY_PLAY)) {
             context.sendBroadcast(intentChangePlay);
         } else if (intent.getAction().equals(NotificationGenerator.NOTIFY_NEXT)) {
@@ -24,5 +24,6 @@ public class NotificationBroadcast extends BroadcastReceiver {
         } else if (intent.getAction().equals(NotificationGenerator.NOTIFY_PREVIOUS)) {
             context.sendBroadcast(intentPre);
         }
+
     }
 }

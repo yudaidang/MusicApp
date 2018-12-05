@@ -7,9 +7,11 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
 
     <application
         android:allowBackup="true"
@@ -28,18 +30,31 @@
         <activity android:name=".Music.Activity.PlayMusicActivity" />
         <activity android:name=".MainActivity" />
 
-        <service
-            android:name=".Service.PlaySongService"
-            android:exported="true"></service>
-        <receiver android:name=".Notification.NotificationBroadcast" >
+        　　　　
+        <receiver android:name=".Service.RemoteControlClientReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+        <service android:name=".Service.PlaySongService">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name=".Notification.NotificationBroadcast">
             <intent-filter>
                 <action android:name="com.example.cpu11268.musicapp.Notification.previous" />
                 <action android:name="com.example.cpu11268.musicapp.Notification.delete" />
                 <action android:name="com.example.cpu11268.musicapp.Notification.pause" />
                 <action android:name="com.example.cpu11268.musicapp.Notification.next" />
                 <action android:name="com.example.cpu11268.musicapp.Notification.play" />
+
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>

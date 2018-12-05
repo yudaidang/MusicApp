@@ -20,7 +20,6 @@ import com.example.cpu11268.musicapp.Music.Fragment.TrackListFragment;
 import com.example.cpu11268.musicapp.Music.Presenter.PlayMusicPresenter;
 import com.example.cpu11268.musicapp.Music.Views.IPlayMusicContract;
 import com.example.cpu11268.musicapp.R;
-import com.example.cpu11268.musicapp.Service.PlaySongService;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.Utils.Utils;
 import com.example.imageloader.ImageLoader;
@@ -54,10 +53,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private AnimatedVectorDrawable playToPause;
     private AnimatedVectorDrawable pauseToPlay;
     private Intent intentIsPlay;
-
     private boolean mIsPlay = true;
-    private Intent intentService;
-
     // Set up broadcast receiver
     private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
         @Override
@@ -65,21 +61,18 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             showPD(bufferIntent);
         }
     };
-
     private BroadcastReceiver broadcastUpdateInfo = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent bufferIntent) {
             updateInfo(bufferIntent);
         }
     };
-
     private BroadcastReceiver broadcastSeekBarReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent serviceIntent) {
             updateUISeekbar(serviceIntent);
         }
     };
-
     private BroadcastReceiver broadcastUpdateUi = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent serviceIntent) {
@@ -87,11 +80,16 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         }
     };
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
     private void updateUI(Intent serviceIntent) {
         boolean isPlay = serviceIntent.getBooleanExtra("updateUi", false);
-        if (mIsPlay == isPlay) {
+/*        if (mIsPlay == isPlay) {
             return;
-        }
+        }*/
         AnimatedVectorDrawable drawable = isPlay ? playToPause : pauseToPlay;
         ic_play.setImageDrawable(drawable);
         drawable.start();
@@ -108,6 +106,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         Track track = (Track) serviceIntent.getSerializableExtra(EXTRA_DATA);
         trackName.setText(track.getName());
         artist.setText(track.getArtist());
+        seekBar.setProgress(0);
+        seekBar.setSecondaryProgress(0);
         ImageLoader.getInstance().loadImageWorker(this, track.getmImage(), img, "");
 
     }
@@ -129,6 +129,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_music);
 
+
         Intent i = getIntent();
         idTrack = i.getStringExtra(Constant.DATA_TRACK);
 
@@ -145,7 +146,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         mPresenter = new PlayMusicPresenter();
         mPresenter.attachView(this);
         mPresenter.getTracks();
-
 
         setUpTrack(idTrack);
         listener();
@@ -164,26 +164,26 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         mPresenter.getTrack(idTrack, this);
     }
 
-    private void nextSong(){
+    private void nextSong() {
         Intent intent = new Intent(BROADCAST_NEXT_SONG);
-        if (!mIsPlay) {
+/*        if (!mIsPlay) {
             AnimatedVectorDrawable drawable = playToPause;
             ic_play.setImageDrawable(drawable);
             drawable.start();
         }
-        mIsPlay = true;
+        mIsPlay = true;*/
 
         sendBroadcast(intent);
     }
 
-    private void preSong(){
+    private void preSong() {
         Intent intent = new Intent(BROADCAST_PRE_SONG);
-        if (!mIsPlay) {
+/*        if (!mIsPlay) {
             AnimatedVectorDrawable drawable = playToPause;
             ic_play.setImageDrawable(drawable);
             drawable.start();
         }
-        mIsPlay = true;
+        mIsPlay = true;*/
 
         sendBroadcast(intent);
     }
@@ -241,7 +241,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
                     idTrack = track.getId();
                     streamUrl = track.getStreamUrl();
-//                    changeSong(streamUrl);
                     nextSong();
                     seekBar.setSecondaryProgress(0);
                     seekBar.setProgress(0);
@@ -256,7 +255,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
                 if (track != null) {
                     idTrack = track.getId();
                     streamUrl = track.getStreamUrl();
-//                    changeSong(streamUrl);
                     preSong();
                     seekBar.setSecondaryProgress(0);
                     seekBar.setProgress(0);
@@ -290,12 +288,10 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     }
 
     private void play() {
-        intentIsPlay.putExtra("isPlay", true);
         sendBroadcast(intentIsPlay);
     }
 
     private void pause() {
-        intentIsPlay.putExtra("isPlay", false);
         sendBroadcast(intentIsPlay);
     }
 
@@ -310,7 +306,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
         seekBar.setProgress(0);
         seekBar.setMax(Integer.parseInt(track.getDuration()));
-        changeSong(track);
+        this.track = track;
 
         trackName.setText(track.getName());
         artist.setText(track.getArtist());
@@ -318,13 +314,13 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         if (!TextUtils.isEmpty(track.getmImage()) && track.getmImage() != "null") {
             ImageLoader.getInstance().loadImageWorker(this, track.getmImage(), img, "");
         }
+        changeSong(track);
     }
 
     @Override
     public void getAllData(List<Track> tracks) {
         this.tracks = tracks;
     }
-
 
 
     @Override
@@ -363,6 +359,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         unregisterReceiver(broadcastSeekBarReceiver);
         unregisterReceiver(broadcastUpdateUi);
         unregisterReceiver(broadcastUpdateInfo);
+
         Log.d("PlayMusicActivity", "DESTROY");
         super.onDestroy();
     }
