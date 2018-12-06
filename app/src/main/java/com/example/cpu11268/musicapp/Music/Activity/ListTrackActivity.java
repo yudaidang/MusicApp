@@ -24,7 +24,7 @@ public class ListTrackActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_track);
 
-        fragment = new TrackListFragment();
+        fragment = TrackListFragment.newInstance(0);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame_container, fragment, CALL_FROM_TRACK_LIST_ACTIVITY)
                 .addToBackStack(null)
@@ -45,7 +45,6 @@ public class ListTrackActivity extends BaseActivity {
                 PlaySongService.MyBinder binder = (PlaySongService.MyBinder) service;
                 myService = binder.getService(); // lấy đối tượng MyService
                 isBound = true;
-//                changeSong(track);
 
             }
         };

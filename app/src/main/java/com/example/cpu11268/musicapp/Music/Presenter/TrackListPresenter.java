@@ -34,6 +34,33 @@ public class TrackListPresenter extends BasePresenter<ITrackListContract.View> i
     }
 
     @Override
+    public void search(String key) {
+        List<Track> tracks = DataTrack.getInstance().getTracks();
+        if (tracks == null) {
+            return;
+        }
+        List<Track> results = new ArrayList<>();
+        String trimKey = key.replaceAll("\\s{2,}", " ").trim();
+        String[] splitKeys = trimKey.toLowerCase().split(" ");
+        for (Track track : tracks) {
+            if (checkContain(splitKeys, track.getName())) {
+                results.add(track);
+            }
+        }
+        mView.showData(results);
+    }
+
+    private boolean checkContain(String[] splitKey, String name) {
+        name = name.toLowerCase();
+        for (int i = 0; i < splitKey.length; i++) {
+            if (!name.contains(splitKey[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public boolean handleMessage(Message msg) {
         if (msg.what == Constant.LOAD_API) {
             storeMem((List<Track>) msg.obj);

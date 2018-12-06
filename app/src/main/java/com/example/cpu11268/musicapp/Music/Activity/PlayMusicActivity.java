@@ -9,10 +9,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.text.TextUtils;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -25,7 +24,7 @@ import com.example.cpu11268.musicapp.Music.Views.IPlayMusicContract;
 import com.example.cpu11268.musicapp.R;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.Utils.Utils;
-import com.example.imageloader.ImageLoader;
+import com.example.cpu11268.musicapp.Utils.ViewPagerAdapter;
 
 import java.util.List;
 
@@ -60,8 +59,10 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private boolean mIsPlay = true;
     private FragmentTransaction ft;
     private FragmentManager fragmentManager;
-    private boolean disPlayList = false;
-    private FrameLayout frame_container;
+    private boolean firstDisplay = false;
+    private ViewPager viewPager;
+    private ViewPagerAdapter viewPagerAdapter;
+
     // Set up broadcast receiver
     private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
         @Override
@@ -95,15 +96,17 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
     private void updateUI(Intent serviceIntent) {
         boolean isPlay = serviceIntent.getBooleanExtra("updateUi", false);
-        AnimatedVectorDrawable drawable = isPlay ? playToPause : pauseToPlay;
-        ic_play.setImageDrawable(drawable);
-        drawable.start();
-        if (isPlay) {
-            mIsPlay = true;
-            ic_play.setSelected(false);
-        } else {
-            mIsPlay = false;
-            ic_play.setSelected(true);
+        if (isPlay != mIsPlay) {
+            AnimatedVectorDrawable drawable = isPlay ? playToPause : pauseToPlay;
+            ic_play.setImageDrawable(drawable);
+            drawable.start();
+            if (isPlay) {
+                mIsPlay = true;
+                ic_play.setSelected(false);
+            } else {
+                mIsPlay = false;
+                ic_play.setSelected(true);
+            }
         }
     }
 
@@ -113,7 +116,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         artist.setText(track.getArtist());
         seekBar.setProgress(0);
         seekBar.setSecondaryProgress(0);
-        ImageLoader.getInstance().loadImageWorker(this, track.getmImage(), img, "");
 
     }
 
@@ -133,29 +135,29 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_music);
+
+
+        viewPager = findViewById(R.id.view_pager);
+
+
+
         initFindViewById();
         fragmentManager = getSupportFragmentManager();
-
+        mPresenter = new PlayMusicPresenter();
+        mPresenter.attachView(this);
+        mPresenter.getTracks();
         Intent i = getIntent();
         idTrack = i.getStringExtra(Constant.DATA_TRACK);
-
+        setUpTrack(idTrack);
 
         intent = new Intent(BROADCAST_SEEKBAR);
         intentIsPlay = new Intent(BROADCAST_CHANGE_PLAY);
-        //
 
         context = this;
         playToPause = (AnimatedVectorDrawable) getDrawable(R.drawable.play_to_pause_anim);
         pauseToPlay = (AnimatedVectorDrawable) getDrawable(R.drawable.pause_to_play_anim);
         fragment = new TrackListFragment();
-//        fragmentImage = new DetailTrackFragment();
 
-
-        mPresenter = new PlayMusicPresenter();
-        mPresenter.attachView(this);
-        mPresenter.getTracks();
-
-        setUpTrack(idTrack);
         listener();
     }
 
@@ -192,7 +194,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             drawable.start();
         }
         mIsPlay = true;
-
         sendBroadcast(intent);
     }
 
@@ -215,25 +216,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             @Override
             public void onClick(View v) {
                 finish();
-            }
-        });
-        list.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!disPlayList) {
-                    ft = fragmentManager.beginTransaction();
-                    ft.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right);
-                    ft.replace(R.id.frame_container, fragment, fragment.getClass().getSimpleName());
-                    ft.addToBackStack(null);
-                    ft.commit();
-                    disPlayList = true;
-                } else {
-                    ft = fragmentManager.beginTransaction();
-                    ft.setCustomAnimations(R.anim.exit_to_right, R.anim.enter_from_left);
-                    ft.commit();
-                    fragmentManager.popBackStack();
-                    disPlayList = false;
-                }
+                overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_down);
+
             }
         });
 
@@ -302,6 +286,13 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     @Override
     public void showData(final Track track) {
         this.track = track;
+
+        if(!firstDisplay){
+            viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), track);
+            viewPager.setAdapter(viewPagerAdapter);
+            firstDisplay = true;
+        }
+
         registerReceiver(broadcastBufferReceiver, new IntentFilter(BROADCAST_BUFFER));
         registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_ACTION));
         registerReceiver(broadcastUpdateUi, new IntentFilter("UPDATE_UI_COMMUNICATE"));
@@ -315,9 +306,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         trackName.setText(track.getName());
         artist.setText(track.getArtist());
         maxTime.setText(Utils.getInstance().millisecondsToString(Integer.parseInt(track.getDuration())));
-        if (!TextUtils.isEmpty(track.getmImage()) && track.getmImage() != "null") {
-            ImageLoader.getInstance().loadImageWorker(this, track.getmImage(), img, "");
-        }
         changeSong(track);
     }
 
@@ -329,10 +317,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
     @Override
     public void initFindViewById() {
-        frame_container = findViewById(R.id.frame_container);
         back = findViewById(R.id.back);
-        list = findViewById(R.id.list);
-        img = findViewById(R.id.imgTrack);
+//        img = findViewById(R.id.imgTrack);
         ic_next = findViewById(R.id.ic_next);
         ic_pre = findViewById(R.id.ic_pre);
         ic_play = findViewById(R.id.ic_play);

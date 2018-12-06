@@ -6,10 +6,39 @@
     android:background="#1e1e1e"
     tools:context=".Music.Fragment.TrackListFragment">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <EditText
+            android:id="@+id/search"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/edit_search"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textColor="@color/background_body"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:id="@+id/btnClose"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:padding="15dp"
+            android:src="@drawable/ic_if_close"
+            android:tint="@color/grey_4"
+            android:visibility="gone" />
+    </FrameLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp">
 
     </android.support.v7.widget.RecyclerView>
 

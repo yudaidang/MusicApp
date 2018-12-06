@@ -29,6 +29,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
     private List<Track> tracks = new ArrayList<>();
     private Activity context;
     private String flag;
+    private Track trackSelect;
 
     public TrackAdapter(Activity context, String flag) {
         this.context = context;
@@ -42,11 +43,20 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
         return new TrackHolder(view);
     }
 
+    public void setTrack(Track track) {
+        this.trackSelect = track;
+        notifyDataSetChanged();
+    }
 
     @Override
     public void onBindViewHolder(@NonNull final TrackHolder holder, int position) {
         final Track track = tracks.get(position);
         holder.getmName().setText("");
+        if(trackSelect != null && TextUtils.equals(track.getStreamUrl(),trackSelect.getStreamUrl())){
+            holder.getmMenu().setVisibility(View.VISIBLE);
+        }else{
+            holder.getmMenu().setVisibility(View.GONE);
+        }
         holder.getDuration().setText("");
         holder.getmArtist().setText("");
         holder.getmImage().setImageBitmap(null);
@@ -58,6 +68,8 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                     intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra(Constant.DATA_TRACK, track.getId());
                     context.startActivity(intent);
+                    context.overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_bottom);
+
                 }else{
                     if(context instanceof PlayMusicActivity){
                         PlayMusicActivity myactivity = (PlayMusicActivity) context;

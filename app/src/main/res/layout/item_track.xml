@@ -58,9 +58,10 @@
     <ImageView
         android:id="@+id/menu"
         android:layout_width="40dp"
+        android:visibility="gone"
         android:layout_height="match_parent"
         android:layout_gravity="right"
-        android:src="@drawable/ic_menu"
+        android:src="@drawable/play_icon"
         android:tint="@color/background_body"
         android:padding="10dp"/>
 </FrameLayout>

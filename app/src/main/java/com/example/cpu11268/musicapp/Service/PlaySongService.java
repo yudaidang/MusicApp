@@ -99,19 +99,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void updateSong(Intent intent) {
-//        isPrepare = false;
         NotificationGenerator.customBigNotification(this);
         Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
         changeSong(track);
-/*        mIsPlay = true;
-        handler.postDelayed(sendUpdatesToUI, 50);
-        updateUi.putExtra("updateUi", true);
-        sendBroadcast(updateUi);
-        mediaPlayer.reset();
-        streamSong = track.getStreamUrl();
-        idSong = track.getId();
-        NotificationGenerator.updateInfo(track);
-        setStreamSong(streamSong);*/
     }
 
     public void setStreamSong(String streamSong) {
@@ -256,7 +246,8 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public void playMedia() {
 
-        changePlayNotPrepared();
+        if (!changePlayNotPrepared())
+            return;
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             handler.postDelayed(sendUpdatesToUI, 50);
@@ -266,31 +257,33 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
     }
 
-    private void changePlayNotPrepared(){
+    private boolean changePlayNotPrepared() {
         if (!isPrepare) {
             handler.postDelayed(sendUpdatesToUI, 50);
             if (mIsPlay) {
                 updateUi.putExtra("updateUi", false);
                 sendBroadcast(updateUi);
                 mIsPlay = false;
-                return;
+                return false;
             }
             updateUi.putExtra("updateUi", true);
             sendBroadcast(updateUi);
             mIsPlay = true;
-            return;
+            return false;
         }
+        return true;
+
     }
 
     @Override
     public void pauseMedia() {
-        changePlayNotPrepared();
+        if (!changePlayNotPrepared())
+            return;
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             updateUi.putExtra("updateUi", false);
             sendBroadcast(updateUi);
             mIsPlay = false;
-
         }
 
     }
