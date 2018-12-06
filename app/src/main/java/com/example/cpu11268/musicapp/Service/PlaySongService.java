@@ -68,8 +68,12 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void nextSong() {
-        isPrepare = false;
         Track track = DataTrack.getInstance().getTrackNextInList(idSong);
+        changeSong(track);
+    }
+
+    private void changeSong(Track track) {
+        isPrepare = false;
         if (track != null) {
             idSong = track.getId();
             streamSong = track.getStreamUrl();
@@ -89,31 +93,17 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void preSong() {
-        isPrepare = false;
         Track track = DataTrack.getInstance().getTrackPreInList(idSong);
-        if (track != null) {
-            idSong = track.getId();
-            streamSong = track.getStreamUrl();
-        }
-        mIsPlay = true;
-        handler.postDelayed(sendUpdatesToUI, 50);
-        updateUi.putExtra("updateUi", true);
-        sendBroadcast(updateUi);
-        mediaPlayer.reset();
-
-        updateInfoSong.putExtra(EXTRA_DATA, track);
-        sendBroadcast(updateInfoSong);
-        NotificationGenerator.updateInfo(track);
-
-        setStreamSong(streamSong);
+        changeSong(track);
     }
 
     @Override
     public void updateSong(Intent intent) {
-        isPrepare = false;
+//        isPrepare = false;
         NotificationGenerator.customBigNotification(this);
         Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
-        mIsPlay = true;
+        changeSong(track);
+/*        mIsPlay = true;
         handler.postDelayed(sendUpdatesToUI, 50);
         updateUi.putExtra("updateUi", true);
         sendBroadcast(updateUi);
@@ -121,7 +111,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         streamSong = track.getStreamUrl();
         idSong = track.getId();
         NotificationGenerator.updateInfo(track);
-        setStreamSong(streamSong);
+        setStreamSong(streamSong);*/
     }
 
     public void setStreamSong(String streamSong) {
@@ -163,8 +153,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("onCreate", " PlaySongPresenter");
-
         playSongPresenter = new PlaySongPresenter(this, this);
 
         binder = new MyBinder(); // do MyBinder được extends Binder
@@ -268,20 +256,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public void playMedia() {
 
-        if (!isPrepare) {
-            handler.postDelayed(sendUpdatesToUI, 50);
-            if (mIsPlay) {
-                updateUi.putExtra("updateUi", false);
-                sendBroadcast(updateUi);
-                mIsPlay = false;
-                return;
-            }
-            updateUi.putExtra("updateUi", true);
-            sendBroadcast(updateUi);
-            mIsPlay = true;
-            return;
-        }
-
+        changePlayNotPrepared();
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             handler.postDelayed(sendUpdatesToUI, 50);
@@ -291,8 +266,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
     }
 
-    @Override
-    public void pauseMedia() {
+    private void changePlayNotPrepared(){
         if (!isPrepare) {
             handler.postDelayed(sendUpdatesToUI, 50);
             if (mIsPlay) {
@@ -306,6 +280,11 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             mIsPlay = true;
             return;
         }
+    }
+
+    @Override
+    public void pauseMedia() {
+        changePlayNotPrepared();
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             updateUi.putExtra("updateUi", false);
@@ -377,7 +356,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
     }
 
-    //ADDDDD
     public class MyBinder extends Binder {
         public PlaySongService getService() {
             return PlaySongService.this;

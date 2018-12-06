@@ -2,6 +2,7 @@ package com.example.cpu11268.musicapp.Notification;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,16 +13,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.widget.RemoteViews;
 
 import com.example.cpu11268.musicapp.Model.Track;
+import com.example.cpu11268.musicapp.Music.Activity.PlayMusicActivity;
 import com.example.cpu11268.musicapp.R;
 import com.example.cpu11268.musicapp.Service.PlaySongService;
 import com.example.imageloader.ImageLoader;
 
 import static android.app.Notification.FLAG_ONGOING_EVENT;
 import static android.app.Notification.VISIBILITY_PRIVATE;
+import static android.content.Context.KEYGUARD_SERVICE;
+import static android.content.Context.POWER_SERVICE;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 
@@ -58,19 +63,10 @@ public class NotificationGenerator {
         nc = new Notification.Builder(context).build();
         nm = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
 
-        Intent notifyIntent = new Intent(context, PlaySongService.class);
+        Intent notifyIntent = new Intent(context, PlayMusicActivity.class);
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+
         PendingIntent pendingIntent = PendingIntent.getService(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-/*        nc.setContentIntent(pendingIntent);
-        nc.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
-        nc.setSmallIcon(R.drawable.play_icon);
-        nc.setAutoCancel(true);
-        nc.setContent(expandedViewSmall);
-        nc.setContentTitle("Music Player");
-        nc.setContentText("Control Audio");
-        nc.setPriority(Notification.PRIORITY_MAX);
-        nc.setVisibility(VISIBILITY_PRIVATE);
-        nc.setOngoing(true);*/
         nc.contentIntent = pendingIntent;
         nc.contentView = expandedViewSmall;
         nc.flags = Notification.FLAG_ONGOING_EVENT;
@@ -87,9 +83,9 @@ public class NotificationGenerator {
         }
         setListeners(expandedViewSmall
                 , context);
+
         ((Service) context).startForeground(NOTIFICATION_ID_CUSTOM_BIG, nc);
 
-//        nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc.build());
     }
 
     private static void setListeners(RemoteViews view, Context context) {
