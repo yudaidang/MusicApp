@@ -4,12 +4,22 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
+import android.view.View;
+import android.widget.ImageView;
 
+import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.Music.Fragment.TrackListFragment;
 import com.example.cpu11268.musicapp.R;
 import com.example.cpu11268.musicapp.Service.PlaySongService;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.example.cpu11268.musicapp.Constant.CALL_FROM_TRACK_LIST_ACTIVITY;
 
@@ -19,10 +29,13 @@ public class ListTrackActivity extends BaseActivity {
     private ServiceConnection connection;
     private PlaySongService myService;
     private boolean isBound = false;
+    private ImageView addFolder;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_track);
+
 
         fragment = TrackListFragment.newInstance(0);
         getSupportFragmentManager().beginTransaction()
@@ -51,4 +64,6 @@ public class ListTrackActivity extends BaseActivity {
         bindService(intentService, connection, Context.BIND_AUTO_CREATE);
 
     }
+
+
 }

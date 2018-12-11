@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Music.Activity.ListTrackActivity">
-
+    tools:context=".Music.Activity.SelectFileActivity">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -13,7 +12,8 @@
         android:elevation="3dp"
         app:contentInsetLeft="0dp"
         app:contentInsetRight="0dp"
-        app:contentInsetStart="0dp">
+        app:contentInsetStart="0dp"
+        >
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -21,23 +21,32 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:gravity="center_vertical">
-
+            <ImageView
+                android:layout_width="50dp"
+                android:padding="10dp"
+                android:layout_height="50dp"
+                android:tint="#FFFFFF"
+                android:src="@drawable/ic_back"/>
             <TextView
                 android:id="@+id/txt_brand"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:gravity="center"
-                android:text="Danh sách bài hát"
-                android:textColor="#FFFFFF"
+                android:text="Chọn tập tin"
                 android:textSize="19dp"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="100dp"
                 android:textStyle="bold" />
         </FrameLayout>
     </android.support.v7.widget.Toolbar>
 
-    <FrameLayout
-        android:id="@+id/frame_container"
+    <android.support.v7.widget.RecyclerView
+        android:padding="5dp"
+        android:id="@+id/recyclerView"
+        android:layout_marginTop="50dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"></FrameLayout>
+        >
+
+    </android.support.v7.widget.RecyclerView>
 </FrameLayout>

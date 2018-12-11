@@ -82,7 +82,6 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
         if (track != null) {
             holder.getmName().setText(track.getName());
-            holder.getDuration().setText(Utils.getInstance().millisecondsToString(Integer.parseInt(track.getDuration())));
             holder.getmArtist().setText(track.getArtist());
             if (!TextUtils.isEmpty(track.getmImage()) && track.getmImage() != "null") {
                 ImageLoader.getInstance().loadImageWorker(context, track.getmImage(), holder.getmImage(), "");

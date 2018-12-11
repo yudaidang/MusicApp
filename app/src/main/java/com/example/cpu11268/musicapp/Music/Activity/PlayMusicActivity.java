@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -300,12 +301,15 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
 
         seekBar.setProgress(0);
-        seekBar.setMax(Integer.parseInt(track.getDuration()));
+        if(!TextUtils.isEmpty(track.getDuration())) {
+            seekBar.setMax(Integer.parseInt(track.getDuration()));
+            maxTime.setText(Utils.getInstance().millisecondsToString(Integer.parseInt(track.getDuration())));
+        }
         this.track = track;
 
         trackName.setText(track.getName());
         artist.setText(track.getArtist());
-        maxTime.setText(Utils.getInstance().millisecondsToString(Integer.parseInt(track.getDuration())));
+
         changeSong(track);
     }
 
@@ -318,7 +322,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     @Override
     public void initFindViewById() {
         back = findViewById(R.id.back);
-//        img = findViewById(R.id.imgTrack);
         ic_next = findViewById(R.id.ic_next);
         ic_pre = findViewById(R.id.ic_pre);
         ic_play = findViewById(R.id.ic_play);

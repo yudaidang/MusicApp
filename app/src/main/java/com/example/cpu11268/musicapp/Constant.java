@@ -21,6 +21,8 @@ public class Constant {
     public static final String EXTRA_DATA= "EXTRA_DATA";
 
 
+    public static final int CHOOSE_FOLDER= 10;
+    public static final int RESULT_CHOOSE_FOLDER= 11;
 
 
     //SERVICE - ACTIVITY

@@ -1,7 +1,9 @@
 package com.example.cpu11268.musicapp.Music.Fragment;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -21,13 +23,17 @@ import android.widget.ImageView;
 
 import com.example.cpu11268.musicapp.Adapter.TrackAdapter;
 import com.example.cpu11268.musicapp.Model.Track;
+import com.example.cpu11268.musicapp.Music.Activity.SelectFileActivity;
 import com.example.cpu11268.musicapp.Music.Presenter.TrackListPresenter;
 import com.example.cpu11268.musicapp.Music.Views.ITrackListContract;
 import com.example.cpu11268.musicapp.R;
 
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_SONG;
+import static com.example.cpu11268.musicapp.Constant.CHOOSE_FOLDER;
+import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_SONG_CHANGE_STREAM;
 
 public class TrackListFragment extends Fragment implements ITrackListContract.View {
@@ -35,7 +41,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
     private RecyclerView recyclerView;
     private TrackAdapter trackAdapter;
     private EditText search;
-    private ImageView btnClose;
+    private ImageView btnClose, add;
     private Context context;
     private Track selectTrack;
     private BroadcastReceiver broadcastUpdateInfo = new BroadcastReceiver() {
@@ -65,6 +71,16 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         super.onCreate(savedInstanceState);
         context = this.getContext();
         context.registerReceiver(broadcastUpdateInfo, new IntentFilter(BROADCAST_CHANGE_SONG));
+
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CHOOSE_FOLDER && resultCode == RESULT_OK) {
+            mPresenter.getTrackLocal(data.getStringExtra(EXTRA_DATA));
+        }
     }
 
     @Override
@@ -77,7 +93,30 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         recyclerView.setLayoutManager(manager);
         trackAdapter = new TrackAdapter(getActivity(), this.getActivity().getClass().getSimpleName());
         btnClose = view.findViewById(R.id.btnClose);
+        add = view.findViewById(R.id.add);
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final String[] items = {"Sound Cloud", "Local"};
 
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Chọn nguồn");
+                builder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // the user clicked on colors[which]
+                        if ("Sound Cloud".equals(items[which])) {
+                            mPresenter.getTrack();
+                        } else if ("Local".equals(items[which])) {
+                            Intent intent = new Intent(context, SelectFileActivity.class);
+                            startActivityForResult(intent, CHOOSE_FOLDER);
+                        }
+                    }
+                });
+                builder.show();
+
+            }
+        });
         recyclerView.setAdapter(trackAdapter);
         search = view.findViewById(R.id.search);
         search.addTextChangedListener(new TextWatcher() {
@@ -132,5 +171,6 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         super.onDestroy();
         context.unregisterReceiver(broadcastUpdateInfo);
     }
+
 
 }
