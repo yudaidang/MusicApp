@@ -38,13 +38,9 @@ public class RemoteControlClientReceiver extends BroadcastReceiver {
                             break;
                         case KeyEvent.ACTION_UP:
                             if (time - mHeadsetDownTime >= 1000) {
-                                Log.d("YUDAIDANGTEST", "long");
-                                // double click
                             } else if (time - mHeadsetUpTime <= 500) {
-                                Log.d("YUDAIDANGTEST", "double");
                                 context.sendBroadcast(intentNext);
                             } else {
-                                Log.d("YUDAIDANGTEST", "one");
                                 context.sendBroadcast(intentIsPlay);
                             }
                             mHeadsetUpTime = time;
@@ -53,9 +49,6 @@ public class RemoteControlClientReceiver extends BroadcastReceiver {
                     break;
 
             }
-            Log.d("YUDAIDANGTEST", KEYCODE_HOME
-                    + " RECEIVE2 " + event.getKeyCode() + " " + event.getAction() + " ");
-
         }
     }
 }

@@ -61,15 +61,12 @@ public class PlaySongPresenter {
     private BroadcastReceiver broadcastHeadPlug = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-//            iPlaySongContract.updateSeekPos(intent);
             int state = intent.getIntExtra("state", -1);
             switch (state) {
                 case 0:
-                    Log.d("HEADSET", "Headset unplugged");
                     iPlaySongContract.pauseMedia();
                     break;
                 case 1:
-                    Log.d("HEADSET", "Headset plugged");
                     iPlaySongContract.playMedia();
 
                     break;
@@ -81,7 +78,6 @@ public class PlaySongPresenter {
     public PlaySongPresenter(IPlaySongContract iPlaySongContract, final Context context) {
         this.iPlaySongContract = iPlaySongContract;
         this.context = context;
-        Log.d("PlaySongPresenter", " PlaySongPresenter");
 
         context.registerReceiver(bReceiverChangeSong, new IntentFilter(BROADCAST_CHANGE_SONG));
         context.registerReceiver(receiverChangePlay, new IntentFilter(BROADCAST_CHANGE_PLAY));
@@ -91,10 +87,8 @@ public class PlaySongPresenter {
         context.registerReceiver(broadcastHeadPlug, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
 
         audioManager = (AudioManager) context.getSystemService(AUDIO_SERVICE);
-//The Receiver registration received
         mRemoteControlClientReceiverComponent = new ComponentName(
                 context.getPackageName(), RemoteControlClientReceiver.class.getName());
-//Register MediaButton
         audioManager.registerMediaButtonEventReceiver(mRemoteControlClientReceiverComponent);
 
     }

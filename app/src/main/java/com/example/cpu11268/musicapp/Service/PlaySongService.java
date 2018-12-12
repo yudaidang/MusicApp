@@ -21,10 +21,14 @@ import com.example.cpu11268.musicapp.Utils.DataTrack;
 
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
+import static com.example.cpu11268.musicapp.Constant.BUFFERING_UPDATE_PROGRESS;
 import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
+import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_SONG_CHANGE_STREAM;
+import static com.example.cpu11268.musicapp.Constant.UPDATE_UI;
+import static com.example.cpu11268.musicapp.Constant.UPDATE_UI_COMMUNICATE;
 import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.cancelNoti;
 
 public class PlaySongService extends Service implements MediaPlayer.OnCompletionListener,
@@ -80,7 +84,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
         mIsPlay = true;
         handler.postDelayed(sendUpdatesToUI, 50);
-        updateUi.putExtra("updateUi", true);
+        updateUi.putExtra(UPDATE_UI, true);
         sendBroadcast(updateUi);
         mediaPlayer.reset();
 
@@ -195,8 +199,8 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public IBinder onBind(Intent intent) {
         bufferIntent = new Intent(BROADCAST_BUFFER);
-        updateUi = new Intent("UPDATE_UI_COMMUNICATE");
-        updateInfoSong = new Intent("UPDATEINFO");
+        updateUi = new Intent(UPDATE_UI_COMMUNICATE);
+        updateInfoSong = new Intent(UPDATEINFO);
         //set up intent seek for seekbar broadcast
         seekIntent = new Intent(BROADCAST_ACTION);
         mediaPlayer.setOnCompletionListener(this);
@@ -217,7 +221,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
         int progress = (int) (((float) percent / 100) * duration);
-        bufferIntent.putExtra("bufferingUpdateProgress", progress);
+        bufferIntent.putExtra(BUFFERING_UPDATE_PROGRESS, progress);
         sendBroadcast(bufferIntent);
     }
 
@@ -251,7 +255,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             handler.postDelayed(sendUpdatesToUI, 50);
-            updateUi.putExtra("updateUi", true);
+            updateUi.putExtra(UPDATE_UI, true);
             sendBroadcast(updateUi);
             mIsPlay = true;
         }
@@ -261,12 +265,12 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         if (!isPrepare) {
             handler.postDelayed(sendUpdatesToUI, 50);
             if (mIsPlay) {
-                updateUi.putExtra("updateUi", false);
+                updateUi.putExtra(UPDATE_UI, false);
                 sendBroadcast(updateUi);
                 mIsPlay = false;
                 return false;
             }
-            updateUi.putExtra("updateUi", true);
+            updateUi.putExtra(UPDATE_UI, true);
             sendBroadcast(updateUi);
             mIsPlay = true;
             return false;
@@ -281,7 +285,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             return;
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
-            updateUi.putExtra("updateUi", false);
+            updateUi.putExtra(UPDATE_UI, false);
             sendBroadcast(updateUi);
             mIsPlay = false;
         }

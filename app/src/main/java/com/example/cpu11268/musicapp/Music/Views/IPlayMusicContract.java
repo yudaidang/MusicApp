@@ -9,7 +9,6 @@ import java.util.List;
 public interface IPlayMusicContract {
     interface View {
         void showData(Track track);
-        void getAllData(List<Track> tracks);
         void initFindViewById();
     }
 
