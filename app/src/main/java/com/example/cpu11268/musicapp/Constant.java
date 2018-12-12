@@ -4,6 +4,7 @@ public class Constant {
     public static final String DATA_TRACK = "track";
     public static final int LOAD_API = 1;
     public static final int DOWN_LOAD_STREAM_AUDIO = 2;
+    public static final int LOAD_TRACKLOCAL = 5;
     public static final int FINISH_DOWNLOAD_STREAM = 3;
     public static final String CALL_FROM_TRACK_LIST_ACTIVITY = "CALL_FROM_TRACK_LIST_ACTIVITY";
 
@@ -22,6 +23,7 @@ public class Constant {
     public static final String UPDATE_UI = "UPDATE_UI";
 
     public static final int CHOOSE_FOLDER= 10;
+    public static final int BACK_LIST_TRACK= 11;
 
 
     //SERVICE - ACTIVITY

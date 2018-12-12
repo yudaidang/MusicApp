@@ -14,6 +14,5 @@ public interface IPlayMusicContract {
 
     interface Presenter {
         void getTrack(String idTrack, Context context);
-        void getTracks();
     }
 }

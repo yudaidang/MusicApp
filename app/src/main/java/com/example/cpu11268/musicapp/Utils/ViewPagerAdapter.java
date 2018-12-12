@@ -10,9 +10,15 @@ import com.example.cpu11268.musicapp.Music.Fragment.TrackListFragment;
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     private Track track;
-    public ViewPagerAdapter(FragmentManager fm, Track track) {
+    private boolean isAreaTrack;
+    private String pathLoad;
+
+
+    public ViewPagerAdapter(FragmentManager fm, boolean isAreaTrack, String pathLoad, Track track) {
         super(fm);
         this.track = track;
+        this.pathLoad = pathLoad;
+        this.isAreaTrack = isAreaTrack;
     }
 
     @Override
@@ -25,6 +31,8 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
                 break;
             case 1:
                 fragment = new TrackListFragment();
+                ((TrackListFragment)fragment).setData(pathLoad, isAreaTrack, track.getId());
+
                 break;
         }
         return fragment;

@@ -15,6 +15,7 @@ import com.example.cpu11268.musicapp.Listener.ItemClickListener;
 import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.Music.Activity.PlayMusicActivity;
 import com.example.cpu11268.musicapp.R;
+import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.ViewHolder.TrackHolder;
 import com.example.imageloader.ImageLoader;
 
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static com.example.cpu11268.musicapp.Constant.BACK_LIST_TRACK;
 import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 
@@ -71,6 +73,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
         holder.setItemClickListener(new ItemClickListener() {
             @Override
             public void onClick(View view, int position, boolean isLongClick) {
+                DataTrack.getInstance().setTracks(tracks);
                 if (TextUtils.equals(flag, "ListTrackActivity")) {
                     Intent intent = new Intent(context, PlayMusicActivity.class);
                     intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
@@ -79,7 +82,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                     bundle.putString(EXTRA_DATA, pathLoad);
                     bundle.putString(DATA_TRACK, track.getId());
                     intent.putExtras(bundle);
-                    context.startActivity(intent);
+                    context.startActivityForResult(intent, BACK_LIST_TRACK);
                     context.overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_bottom);
 
                 } else {

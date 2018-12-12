@@ -11,7 +11,6 @@ public interface ITrackListContract {
 
     interface Presenter {
         void getTrack();
-        void storeMem(List<Track> tracks);
         void search(String key);
 
     }

@@ -17,10 +17,4 @@ public class PlayMusicPresenter extends BasePresenter<IPlayMusicContract.View> i
         mView.showData(track);
     }
 
-    @Override
-    public void getTracks() {
-        List<Track> tracks = DataTrack.getInstance().getTracks();
-        mView.getAllData(tracks);
-    }
-
 }

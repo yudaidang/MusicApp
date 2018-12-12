@@ -5,7 +5,7 @@
     android:layout_marginLeft="5dp"
     android:layout_marginRight="5dp"
     android:layout_marginTop="5dp"
-    android:background="@color/grey_4"
+    android:background="@color/grey_1"
     tools:context=".MainActivity">
 
     <TextView
@@ -16,7 +16,7 @@
         android:padding="5dp"
         android:gravity="center_vertical"
         android:text="Chạy Ngay Đi"
-        android:textColor="@android:color/black"
+        android:textColor="@color/background_body"
         android:textSize="14sp" />
 
     <CheckBox

@@ -5,63 +5,67 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_list"
     tools:context=".Music.Fragment.TrackListFragment">
-
-    <FrameLayout
+    <ProgressBar
+        android:id="@+id/loading"
+        android:padding="160dp"
+        android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp">
-
-        <EditText
-            android:id="@+id/search"
+        android:layout_height="match_parent" />
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginRight="30dp"
-            android:hint="Bộ lọc"
-            android:layout_marginTop="8dp"
-            android:textColorHint="@color/grey_3"
-            android:background="@drawable/edit_search"
-            android:paddingLeft="40dp"
-            android:textColor="@color/background_body"
-            android:textSize="14sp" />
-        <ImageView
-            android:layout_width="40dp"
+            android:layout_height="55dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+
+            <EditText
+                android:id="@+id/search"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/edit_search"
+                android:hint="Bộ lọc"
+                android:paddingLeft="40dp"
+                android:textColor="@color/background_body"
+                android:textColorHint="@color/grey_3"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="left"
+                android:layout_marginRight="30dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_search"
+                android:tint="@color/background_body" />
+
+            <ImageView
+                android:id="@+id/btnClose"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:layout_marginRight="30dp"
+                android:padding="15dp"
+                android:src="@drawable/ic_if_close"
+                android:tint="@color/grey_4"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/add"
+                android:layout_width="30dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:padding="7dp"
+                android:src="@drawable/ic_add"
+                android:tint="#FFFFFF" />
+        </FrameLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="left"
-            android:padding="10dp"
-            android:layout_marginRight="30dp"
-            android:src="@drawable/ic_search"
-            android:tint="@color/background_body"
-            />
-        <ImageView
-            android:id="@+id/btnClose"
-            android:layout_width="50dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="right"
-            android:padding="15dp"
-            android:layout_marginRight="30dp"
-            android:src="@drawable/ic_if_close"
-            android:tint="@color/grey_4"
-            android:visibility="gone"
-            />
+            android:layout_marginTop="55dp"
+            android:padding="5dp">
 
-        <ImageView
-            android:id="@+id/add"
-            android:layout_width="30dp"
-            android:padding="7dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="right"
-            android:tint="#FFFFFF"
-            android:src="@drawable/ic_add"/>
-    </FrameLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:padding="5dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="55dp">
-
-    </android.support.v7.widget.RecyclerView>
-
+        </android.support.v7.widget.RecyclerView>
 </FrameLayout>

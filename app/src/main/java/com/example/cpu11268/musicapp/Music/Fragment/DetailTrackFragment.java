@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.example.cpu11268.musicapp.R;
 import com.example.imageloader.ImageLoader;
 
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
+import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 
 public class DetailTrackFragment extends Fragment {
     private ImageView imageView;
@@ -35,12 +37,17 @@ public class DetailTrackFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         context = this.getContext();
-        context.registerReceiver(broadcastUpdateInfo, new IntentFilter("UPDATEINFO"));
+        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO   ));
     }
 
     private void updateInfo(Intent serviceIntent) {
         Track track = (Track) serviceIntent.getSerializableExtra(EXTRA_DATA);
-        ImageLoader.getInstance().loadImageWorker(context, track.getmImage(), imageView, "");
+        String url = track.getmImage();
+        if (TextUtils.isEmpty(url)) {
+            imageView.setImageResource(R.drawable.default_image);
+        } else {
+            ImageLoader.getInstance().loadImageWorker(context, track.getmImage(), imageView, "");
+        }
     }
 
 
