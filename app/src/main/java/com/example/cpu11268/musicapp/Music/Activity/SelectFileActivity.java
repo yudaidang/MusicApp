@@ -71,12 +71,12 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
     }
 
     private ArrayList<String> getListFiles(String path) {
-        ArrayList<String> result = new ArrayList<>(); //ArrayList cause you don't know how many files there is
-        File folder = new File(path); //This is just to cast to a File type since you pass it as a String
-        File[] filesInFolder = folder.listFiles(); // This returns all the folders and files in your path
-        for (File file : filesInFolder) { //For each of the entries do:
-            if (file.isDirectory()) { //check that it's not a dir
-                result.add(new String(file.getAbsolutePath())); //push the filename as a string
+        ArrayList<String> result = new ArrayList<>();
+        File folder = new File(path);
+        File[] filesInFolder = folder.listFiles();
+        for (File file : filesInFolder) {
+            if (file.isDirectory()) {
+                result.add(new String(file.getAbsolutePath()));
             }
         }
 

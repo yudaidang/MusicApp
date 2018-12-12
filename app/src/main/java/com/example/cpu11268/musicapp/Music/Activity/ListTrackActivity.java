@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.example.cpu11268.musicapp.Music.Fragment.TrackListFragment;
@@ -89,9 +88,5 @@ public class ListTrackActivity extends BaseActivity {
 
             }
         }
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
     }
 }

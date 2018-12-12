@@ -32,7 +32,6 @@ public class GetTrackLocal implements Runnable {
             List<Track> trackLocal = new ArrayList<>();
             for (int i = 0; i < songList.size(); i++) {
                 trackLocal.add(new Track("" + songList.get(i).get("file_path").hashCode(), songList.get(i).get("file_name"), "", "", songList.get(i).get("file_path"), ""));
-                //here you will get list of file name and file path that present in your device
             }
             return trackLocal;
         }

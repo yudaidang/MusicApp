@@ -1,18 +1,15 @@
 package com.example.cpu11268.musicapp.Music.Activity;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
@@ -21,7 +18,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.cpu11268.musicapp.Constant;
 import com.example.cpu11268.musicapp.Model.Track;
@@ -44,6 +40,7 @@ import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAY
 import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
+import static com.example.cpu11268.musicapp.Constant.STATE_LOAD;
 import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI_COMMUNICATE;
@@ -163,7 +160,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         initFindViewById();
 
         Bundle bundle = getIntent().getExtras();
-        isAreaLoad = bundle.getBoolean("STATE_LOAD");
+        isAreaLoad = bundle.getBoolean(STATE_LOAD);
         pathLoad = bundle.getString(EXTRA_DATA);
         idTrack = bundle.getString(DATA_TRACK);
 
@@ -179,12 +176,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         listener();
     }
 
+    //Update progress second progress bar
     private void showPD(Intent bufferIntent) {
         int bufferValue = bufferIntent.getIntExtra(BUFFERING_UPDATE_PROGRESS, 0);
         seekBar.setSecondaryProgress(bufferValue);
     }
 
-    //
     public void setUpTrack(String idTrack) {
         seekBar.setSecondaryProgress(0);
         seekBar.setProgress(0);
@@ -237,7 +234,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
                 intent.putExtra(EXTRA_DATA, true);
                 setResult(RESULT_OK, intent);
                 finish();
-
                 overridePendingTransition(R.anim.slide_in_down, R.anim.slide_out_down);
 
             }
@@ -248,7 +244,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             public void onClick(View v) {
                 Track track = DataTrack.getInstance().getTrackNextInList(idTrack);
                 if (track != null) {
-
                     idTrack = track.getId();
                     nextSong();
                     seekBar.setSecondaryProgress(0);

@@ -24,7 +24,6 @@ import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 public class DetailTrackFragment extends Fragment {
     private ImageView imageView;
     private Context context;
-    private String url;
     private BroadcastReceiver broadcastUpdateInfo = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent bufferIntent) {
@@ -35,7 +34,6 @@ public class DetailTrackFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         context = this.getContext();
         context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO   ));
     }
@@ -70,10 +68,5 @@ public class DetailTrackFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         context.unregisterReceiver(broadcastUpdateInfo);
-    }
-
-
-    public void setImage(String url) {
-        this.url = url;
     }
 }
