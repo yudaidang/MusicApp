@@ -1,8 +1,8 @@
 package com.example.cpu11268.musicapp.Adapter;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -15,7 +15,6 @@ import com.example.cpu11268.musicapp.Listener.ItemClickListener;
 import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.Music.Activity.PlayMusicActivity;
 import com.example.cpu11268.musicapp.R;
-import com.example.cpu11268.musicapp.Utils.Utils;
 import com.example.cpu11268.musicapp.ViewHolder.TrackHolder;
 import com.example.imageloader.ImageLoader;
 
@@ -23,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
+import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 
 public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
@@ -30,6 +31,13 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
     private Activity context;
     private String flag;
     private Track trackSelect;
+    private boolean isAreaLoad = false;
+    private String pathLoad;
+
+    public void setArea(String pathLoad, boolean isAreaLoad){
+        this.pathLoad = pathLoad;
+        this.isAreaLoad = isAreaLoad;
+    }
 
     public TrackAdapter(Activity context, String flag) {
         this.context = context;
@@ -52,9 +60,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
     public void onBindViewHolder(@NonNull final TrackHolder holder, int position) {
         final Track track = tracks.get(position);
         holder.getmName().setText("");
-        if(trackSelect != null && TextUtils.equals(track.getStreamUrl(),trackSelect.getStreamUrl())){
+        if (trackSelect != null && TextUtils.equals(track.getStreamUrl(), trackSelect.getStreamUrl())) {
             holder.getmMenu().setVisibility(View.VISIBLE);
-        }else{
+        } else {
             holder.getmMenu().setVisibility(View.GONE);
         }
         holder.getDuration().setText("");
@@ -66,12 +74,16 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                 if (TextUtils.equals(flag, "ListTrackActivity")) {
                     Intent intent = new Intent(context, PlayMusicActivity.class);
                     intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra(Constant.DATA_TRACK, track.getId());
+                    Bundle bundle = new Bundle();
+                    bundle.putBoolean("STATE_LOAD", isAreaLoad);
+                    bundle.putString(EXTRA_DATA, pathLoad);
+                    bundle.putString(DATA_TRACK, track.getId());
+                    intent.putExtras(bundle);
                     context.startActivity(intent);
                     context.overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_bottom);
 
-                }else{
-                    if(context instanceof PlayMusicActivity){
+                } else {
+                    if (context instanceof PlayMusicActivity) {
                         PlayMusicActivity myactivity = (PlayMusicActivity) context;
                         myactivity.setUpTrack(track.getId());
                     }
@@ -81,10 +93,23 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
 
         if (track != null) {
-            holder.getmName().setText(track.getName());
-            holder.getmArtist().setText(track.getArtist());
+
+            String name = track.getName();
+            if(name.toLowerCase().contains("_")) {
+                name = name.substring(0, name.indexOf("_"));
+            }
+            holder.getmName().setText(name);
+            if (TextUtils.isEmpty(track.getArtist())) {
+                holder.getmArtist().setText("Không có thông tin");
+            } else {
+                holder.getmArtist().setText(track.getArtist());
+            }
+
+
             if (!TextUtils.isEmpty(track.getmImage()) && track.getmImage() != "null") {
                 ImageLoader.getInstance().loadImageWorker(context, track.getmImage(), holder.getmImage(), "");
+            } else {
+                holder.getmImage().setImageResource(R.drawable.default_image);
             }
         }
 

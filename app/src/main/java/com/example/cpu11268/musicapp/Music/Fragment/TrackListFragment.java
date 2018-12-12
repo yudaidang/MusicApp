@@ -61,6 +61,11 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         return myFragment;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
     private void updateInfo(Intent serviceIntent) {
         selectTrack = (Track) serviceIntent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
         trackAdapter.setTrack(selectTrack);
@@ -80,6 +85,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CHOOSE_FOLDER && resultCode == RESULT_OK) {
             mPresenter.getTrackLocal(data.getStringExtra(EXTRA_DATA));
+            trackAdapter.setArea(data.getStringExtra(EXTRA_DATA), true);
         }
     }
 
@@ -107,6 +113,8 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
                         // the user clicked on colors[which]
                         if ("Sound Cloud".equals(items[which])) {
                             mPresenter.getTrack();
+                            trackAdapter.setArea("", false);
+
                         } else if ("Local".equals(items[which])) {
                             Intent intent = new Intent(context, SelectFileActivity.class);
                             startActivityForResult(intent, CHOOSE_FOLDER);
@@ -148,6 +156,12 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
             }
         });
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
     }
 
     @Override

@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1e1e1e"
+    android:background="@drawable/gradient_list"
     tools:context=".Music.Fragment.TrackListFragment">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="55dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp">
 
@@ -16,20 +16,30 @@
             android:id="@+id/search"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginRight="50dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginRight="30dp"
+            android:hint="Bộ lọc"
+            android:layout_marginTop="8dp"
+            android:textColorHint="@color/grey_3"
             android:background="@drawable/edit_search"
-            android:paddingLeft="10dp"
+            android:paddingLeft="40dp"
             android:textColor="@color/background_body"
             android:textSize="14sp" />
-
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:padding="10dp"
+            android:layout_marginRight="30dp"
+            android:src="@drawable/ic_search"
+            android:tint="@color/background_body"
+            />
         <ImageView
             android:id="@+id/btnClose"
             android:layout_width="50dp"
             android:layout_height="match_parent"
             android:layout_gravity="right"
             android:padding="15dp"
-            android:layout_marginRight="50dp"
+            android:layout_marginRight="30dp"
             android:src="@drawable/ic_if_close"
             android:tint="@color/grey_4"
             android:visibility="gone"
@@ -37,9 +47,9 @@
 
         <ImageView
             android:id="@+id/add"
-            android:layout_width="40dp"
-            android:padding="8dp"
-            android:layout_height="50dp"
+            android:layout_width="30dp"
+            android:padding="7dp"
+            android:layout_height="match_parent"
             android:layout_gravity="right"
             android:tint="#FFFFFF"
             android:src="@drawable/ic_add"/>
@@ -47,9 +57,10 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
+        android:padding="5dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp">
+        android:layout_marginTop="55dp">
 
     </android.support.v7.widget.RecyclerView>
 
