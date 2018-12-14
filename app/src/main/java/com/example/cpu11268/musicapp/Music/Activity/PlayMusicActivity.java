@@ -35,12 +35,14 @@ import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_NEXT_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_PRE_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_SEEKBAR;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_UPDATE_NOT_CHANGE_SONG;
 import static com.example.cpu11268.musicapp.Constant.BUFFERING_UPDATE_PROGRESS;
 import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 import static com.example.cpu11268.musicapp.Constant.STATE_LOAD;
+import static com.example.cpu11268.musicapp.Constant.STATE_START_ACTIVITY_PLAY_MUSIC;
 import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI_COMMUNICATE;
@@ -63,7 +65,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private ViewPagerAdapter viewPagerAdapter;
     private boolean isAreaLoad;
     private String pathLoad;
-
+    private int statePlaying = 0;
     // Set up broadcast receiver
     private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
         @Override
@@ -124,7 +126,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     }
 
     private void updateInfo(Intent serviceIntent) {
-        Track track = (Track) serviceIntent.getSerializableExtra(EXTRA_DATA);
+        Track track = (Track) serviceIntent.getSerializableExtra(DATA_TRACK);
+        statePlaying = serviceIntent.getIntExtra(EXTRA_DATA,1);
         String name = track.getName();
         if (name.toLowerCase().contains("_")) {
             name = name.substring(0, name.indexOf("_"));
@@ -135,9 +138,11 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         } else {
             artist.setText(track.getArtist());
         }
-        seekBar.setProgress(0);
-        seekBar.setSecondaryProgress(0);
 
+        if(statePlaying == 1) {
+            seekBar.setProgress(0);
+            seekBar.setSecondaryProgress(0);
+        }
     }
 
     private void updateUISeekbar(Intent serviceIntent) {
@@ -166,7 +171,9 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
         mPresenter = new PlayMusicPresenter();
         mPresenter.attachView(this);
-        setUpTrack(idTrack);
+        statePlaying = bundle.getInt(STATE_START_ACTIVITY_PLAY_MUSIC);
+        setUpTrack(idTrack, statePlaying);
+
 
         intent = new Intent(BROADCAST_SEEKBAR);
         intentIsPlay = new Intent(BROADCAST_CHANGE_PLAY);
@@ -182,9 +189,15 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         seekBar.setSecondaryProgress(bufferValue);
     }
 
-    public void setUpTrack(String idTrack) {
+    public void setUpTrackNotChange(String idTrack) {
+        statePlaying = 0;
+        mPresenter.getTrack(idTrack, this);
+    }
+
+    public void setUpTrack(String idTrack, int state) {
         seekBar.setSecondaryProgress(0);
         seekBar.setProgress(0);
+        statePlaying = state;
         mPresenter.getTrack(idTrack, this);
     }
 
@@ -310,7 +323,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));
 
 
-        seekBar.setProgress(0);
         if (track == null) {
             return;
         }
@@ -328,7 +340,16 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         } else {
             artist.setText(track.getArtist());
         }
-        changeSong(track);
+
+        if(statePlaying != 0) {
+            seekBar.setProgress(0);
+            changeSong(track);
+        }else{
+            Intent intent = new Intent(BROADCAST_UPDATE_NOT_CHANGE_SONG);
+            intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
+            sendBroadcast(intent);
+        }
+        statePlaying = 1;
     }
 
     @Override

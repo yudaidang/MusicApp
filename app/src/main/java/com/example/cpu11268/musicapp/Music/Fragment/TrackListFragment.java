@@ -36,6 +36,7 @@ import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.cpu11268.musicapp.Constant.CHOOSE_FOLDER;
+import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 
@@ -78,7 +79,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
     }
 
     private void updateInfo(Intent serviceIntent) {
-        selectTrack = (Track) serviceIntent.getSerializableExtra(EXTRA_DATA);
+        selectTrack = (Track) serviceIntent.getSerializableExtra(DATA_TRACK);
         trackAdapter.setTrack(selectTrack);
     }
 

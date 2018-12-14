@@ -15,6 +15,8 @@ public class Constant {
     public static final String BROADCAST_CHANGE_PLAY= "BROADCAST_CHANGE_PLAY";
     public static final String BROADCAST_NEXT_SONG= "BROADCAST_NEXT_SONG";
     public static final String BROADCAST_PRE_SONG= "BROADCAST_PRE_SONG";
+    public static final String BROADCAST_UPDATE_NOT_CHANGE_SONG= "BROADCAST_UPDATE_NOT_CHANGE_SONG";
+
     public static final String EXTRA_DATA= "EXTRA_DATA";
     public static final String BUFFERING_UPDATE_PROGRESS= "BUFFERING_UPDATE_PROGRESS";
     public static final String UPDATE_UI_COMMUNICATE = "UPDATE_UI_COMMUNICATE";
@@ -24,6 +26,7 @@ public class Constant {
 
     public static final int CHOOSE_FOLDER= 10;
     public static final int BACK_LIST_TRACK= 11;
+    public static final String STATE_START_ACTIVITY_PLAY_MUSIC= "STATE_START_ACTIVITY_PLAY_MUSIC";
 
 
     //SERVICE - ACTIVITY

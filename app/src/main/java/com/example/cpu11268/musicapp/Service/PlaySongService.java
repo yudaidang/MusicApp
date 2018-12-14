@@ -23,6 +23,7 @@ import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
 import static com.example.cpu11268.musicapp.Constant.BUFFERING_UPDATE_PROGRESS;
 import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAYER;
+import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
@@ -88,7 +89,8 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         sendBroadcast(updateUi);
         mediaPlayer.reset();
 
-        updateInfoSong.putExtra(EXTRA_DATA, track);
+        updateInfoSong.putExtra(DATA_TRACK, track);
+        updateInfoSong.putExtra(EXTRA_DATA, 1);
         sendBroadcast(updateInfoSong);
         NotificationGenerator.updateInfo(track);
 
@@ -290,6 +292,14 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             mIsPlay = false;
         }
 
+    }
+
+    @Override
+    public void updateNotChangeSong(Intent intent) {
+        Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
+        updateInfoSong.putExtra(EXTRA_DATA, 0);
+        updateInfoSong.putExtra(DATA_TRACK, track);
+        sendBroadcast(updateInfoSong);
     }
 
     @Override

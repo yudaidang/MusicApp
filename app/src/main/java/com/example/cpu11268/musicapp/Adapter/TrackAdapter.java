@@ -26,6 +26,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.example.cpu11268.musicapp.Constant.BACK_LIST_TRACK;
 import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
+import static com.example.cpu11268.musicapp.Constant.STATE_START_ACTIVITY_PLAY_MUSIC;
 
 public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
@@ -81,6 +82,11 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                     bundle.putBoolean("STATE_LOAD", isAreaLoad);
                     bundle.putString(EXTRA_DATA, pathLoad);
                     bundle.putString(DATA_TRACK, track.getId());
+                    if(trackSelect!=null && TextUtils.equals(trackSelect.getId(), track.getId())) {
+                        bundle.putInt(STATE_START_ACTIVITY_PLAY_MUSIC, 0);
+                    }else{
+                        bundle.putInt(STATE_START_ACTIVITY_PLAY_MUSIC, 1);
+                    }
                     intent.putExtras(bundle);
                     context.startActivityForResult(intent, BACK_LIST_TRACK);
                     context.overridePendingTransition(R.anim.slide_in_bottom, R.anim.slide_out_bottom);
@@ -88,7 +94,11 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                 } else {
                     if (context instanceof PlayMusicActivity) {
                         PlayMusicActivity myactivity = (PlayMusicActivity) context;
-                        myactivity.setUpTrack(track.getId());
+                        if(trackSelect!=null && TextUtils.equals(trackSelect.getId(), track.getId())) {
+                            myactivity.setUpTrackNotChange(track.getId());
+                        }else{
+                            myactivity.setUpTrack(track.getId(), 1);
+                        }
                     }
                 }
             }

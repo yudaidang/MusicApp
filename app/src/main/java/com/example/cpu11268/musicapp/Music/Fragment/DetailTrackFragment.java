@@ -18,6 +18,7 @@ import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.R;
 import com.example.imageloader.ImageLoader;
 
+import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 
@@ -35,11 +36,11 @@ public class DetailTrackFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this.getContext();
-        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO   ));
+        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));
     }
 
     private void updateInfo(Intent serviceIntent) {
-        Track track = (Track) serviceIntent.getSerializableExtra(EXTRA_DATA);
+        Track track = (Track) serviceIntent.getSerializableExtra(DATA_TRACK);
         String url = track.getmImage();
         if (TextUtils.isEmpty(url)) {
             imageView.setImageResource(R.drawable.default_image);

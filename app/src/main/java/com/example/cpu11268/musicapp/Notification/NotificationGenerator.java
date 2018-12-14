@@ -12,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
@@ -70,7 +71,8 @@ public class NotificationGenerator {
         nc.contentIntent = pendingIntent;
         nc.contentView = expandedViewSmall;
         nc.flags = Notification.FLAG_ONGOING_EVENT;
-        nc.icon = R.drawable.ic_close;
+        nc.icon = R.drawable.default_image;
+        nc.largeIcon = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
 
         // Since android Oreo notification channel is needed.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

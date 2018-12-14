@@ -27,7 +27,6 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         switch (position) {
             case 0:
                 fragment = new DetailTrackFragment();
-                ((DetailTrackFragment)fragment).setImage(track.getmImage());
                 break;
             case 1:
                 fragment = new TrackListFragment();

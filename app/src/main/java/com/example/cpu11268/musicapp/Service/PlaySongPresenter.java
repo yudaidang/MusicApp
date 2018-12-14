@@ -14,6 +14,7 @@ import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_NEXT_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_PRE_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_SEEKBAR;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_UPDATE_NOT_CHANGE_SONG;
 
 public class PlaySongPresenter {
     private IPlaySongContract iPlaySongContract;
@@ -58,6 +59,13 @@ public class PlaySongPresenter {
         }
     };
 
+    private BroadcastReceiver broadcastUpdateSong = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            iPlaySongContract.updateNotChangeSong(intent);
+        }
+    };
+
     private BroadcastReceiver broadcastHeadPlug = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -85,6 +93,7 @@ public class PlaySongPresenter {
         context.registerReceiver(bReceiverPreSong, new IntentFilter(BROADCAST_PRE_SONG));
         context.registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_SEEKBAR));
         context.registerReceiver(broadcastHeadPlug, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+        context.registerReceiver(broadcastUpdateSong, new IntentFilter(BROADCAST_UPDATE_NOT_CHANGE_SONG));
 
         audioManager = (AudioManager) context.getSystemService(AUDIO_SERVICE);
         mRemoteControlClientReceiverComponent = new ComponentName(
@@ -100,6 +109,7 @@ public class PlaySongPresenter {
         context.unregisterReceiver(bReceiverChangeSong);
         context.unregisterReceiver(broadcastSeekBarReceiver);
         context.unregisterReceiver(broadcastHeadPlug);
+        context.unregisterReceiver(broadcastUpdateSong);
         audioManager.unregisterMediaButtonEventReceiver(mRemoteControlClientReceiverComponent);
 
     }
