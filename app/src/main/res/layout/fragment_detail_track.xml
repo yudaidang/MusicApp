@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1e1e1e"
-    tools:context=".Music.Fragment.DetailTrackFragment">
+    tools:context=".Main.Fragment.DetailTrackFragment">
 
     <ImageView
         android:id="@+id/imgTrack"

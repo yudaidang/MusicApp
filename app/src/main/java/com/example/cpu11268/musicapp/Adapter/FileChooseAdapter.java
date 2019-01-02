@@ -9,8 +9,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 
 import com.example.cpu11268.musicapp.Listener.ItemClickListener;
-import com.example.cpu11268.musicapp.Music.Activity.ISelectFileInterface;
-import com.example.cpu11268.musicapp.Music.Activity.SelectFileActivity;
+import com.example.cpu11268.musicapp.Main.Activity.ISelectFileInterface;
 import com.example.cpu11268.musicapp.R;
 import com.example.cpu11268.musicapp.ViewHolder.FileHolder;
 

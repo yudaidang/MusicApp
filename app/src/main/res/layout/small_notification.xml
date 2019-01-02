@@ -49,14 +49,15 @@
                     android:layout_height="32dp"
                     android:backgroundTint="@android:color/black"
                     android:background="@drawable/ic_pre"/>
-                <Button
+                <ImageView
                     android:id="@+id/play"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:backgroundTint="@android:color/black"
-                    android:background="@drawable/state_notification"/>
+                    android:src="@drawable/pause_icon"
+                    android:tint="@android:color/black"
+                    />
                 <Button
                     android:id="@+id/next"
                     android:layout_width="32dp"

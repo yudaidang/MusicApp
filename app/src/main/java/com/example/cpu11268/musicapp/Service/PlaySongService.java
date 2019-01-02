@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,6 +19,15 @@ import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.Notification.NotificationGenerator;
 import com.example.cpu11268.musicapp.Runnable.DownloadStreamRealTime;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
@@ -44,6 +54,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private Handler handler;
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private IBinder binder;
+    private List<Future<?>> futures = new ArrayList<Future<?>>();
+    private BlockingQueue queueDisk;
+    private String idRecent;
     // Seekbar
     private int mediaPosition;
     //Intent
@@ -55,11 +68,12 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private Runnable sendUpdatesToUI = new Runnable() {
         public void run() {
             LogMediaPosition();
+            handler.removeCallbacks(sendUpdatesToUI);
             handler.postDelayed(this, 500); // 2 seconds
 
         }
     };
-
+    private ExecutorService executor;
 
     @Override
     public void changePlay() {
@@ -87,7 +101,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         handler.postDelayed(sendUpdatesToUI, 50);
         updateUi.putExtra(UPDATE_UI, true);
         sendBroadcast(updateUi);
-        mediaPlayer.reset();
 
         updateInfoSong.putExtra(DATA_TRACK, track);
         updateInfoSong.putExtra(EXTRA_DATA, 1);
@@ -105,7 +118,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void updateSong(Intent intent) {
-        NotificationGenerator.customBigNotification(this);
+        if(!NotificationGenerator.isExistNoti()){
+            NotificationGenerator.customBigNotification(this);
+        }
         Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
         changeSong(track);
     }
@@ -113,15 +128,14 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     public void setStreamSong(String streamSong) {
         seekIntent.putExtra(CURRENT_POSITION_MEDIA_PLAYER, 0);
         sendBroadcast(seekIntent);
-        setupHandler();
         DownloadStreamRealTime downloadStreamRealTime = new DownloadStreamRealTime(handler, mediaPlayer, streamSong);
-        new Thread(downloadStreamRealTime).start();
+        Future<?> f = executor.submit(downloadStreamRealTime);
+        futures.add(f);
     }
 
     @Override
     public void updateSeekPos(Intent intent) {
         int seekPos = intent.getIntExtra(Constant.STRING_UPDATE_SEEK_MEDIA_FROM_ACTIVITY, 0);
-        Log.d("PlaySongService", seekPos + "");
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.seekTo(seekPos);
             setupHandler();
@@ -135,6 +149,8 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             if (!isPrepare) {
                 mediaPosition = 0;
             }
+            duration = mediaPlayer.getDuration();
+
             seekIntent.putExtra(CURRENT_POSITION_MEDIA_PLAYER, mediaPosition);
             seekIntent.putExtra(DURATION_SONG_MEDIA_PLAYER, duration);
             sendBroadcast(seekIntent);
@@ -143,6 +159,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     // ---Send seekbar info to activity----
     private void setupHandler() {
+        handler.removeCallbacks(sendUpdatesToUI);
         handler.postDelayed(sendUpdatesToUI, 50); // 1 second
     }
 
@@ -150,6 +167,72 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     public void onCreate() {
         super.onCreate();
         playSongPresenter = new PlaySongPresenter(this, this);
+
+        if (executor == null) {
+            queueDisk = new LinkedBlockingDeque() {
+
+                @Override
+                public boolean add(Object o) {
+                    if (contains(o)) {
+                        remove(o);
+                    }
+                    if(queueDisk.size() > 1) {
+                        clear();
+                    }
+                    return true;
+                }
+
+                @Override
+                public void put(Object o) throws InterruptedException {
+                    if (contains(o)) {
+                        remove(o);
+                    }
+
+                    if(queueDisk.size() > 1) {
+                        clear();
+                    }
+                    super.putFirst(o);
+                }
+
+                @Override
+                public boolean offer(Object o) {
+                    if (contains(o)) {
+                        remove(o);
+                    }
+                    if(queueDisk.size() > 0) {
+                        clear();
+                    }
+                    return offerFirst(o);
+                }
+
+                @Override
+                public Object poll() {
+                    return pollLast();
+                }
+
+                @Override
+                public Object poll(long timeout, TimeUnit unit) throws InterruptedException {
+                    return super.pollLast(timeout, unit);
+                }
+
+                @Override
+                public Object take() throws InterruptedException {
+                    return takeLast();
+                }
+
+                @Override
+                public Object peek() {
+                    return super.peekFirst();
+                }
+            };
+            executor = new ThreadPoolExecutor(
+                    1,
+                    1,
+                    100L,
+                    TimeUnit.MILLISECONDS,
+
+                    queueDisk);
+        }
 
         binder = new MyBinder(); // do MyBinder được extends Binder
 
@@ -160,7 +243,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Log.d("YUDAIDANG", "onDestroy");
         stopSelf();
         cancelNoti();
 
@@ -169,15 +251,12 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        // Insert notification start
         return START_STICKY;
 
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        Log.d("ServiceDemo", "Đã gọi onBind()");
         mediaPlayer.stop();
         return super.onUnbind(intent);
     }
@@ -245,8 +324,9 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+
         duration = mediaPlayer.getDuration();
-        isPrepare = true;
+        Log.d("DURRATION", mediaPlayer.getDuration() + "");
     }
 
     @Override
@@ -256,25 +336,32 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             return;
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
+            handler.removeCallbacks(sendUpdatesToUI);
             handler.postDelayed(sendUpdatesToUI, 50);
             updateUi.putExtra(UPDATE_UI, true);
             sendBroadcast(updateUi);
+            NotificationGenerator.updateButtonPlay(true);
+
             mIsPlay = true;
+        }else{
+            NotificationGenerator.updateButtonPlay(true);
         }
     }
 
     private boolean changePlayNotPrepared() {
         if (!isPrepare) {
+            handler.removeCallbacks(sendUpdatesToUI);
             handler.postDelayed(sendUpdatesToUI, 50);
             if (mIsPlay) {
                 updateUi.putExtra(UPDATE_UI, false);
                 sendBroadcast(updateUi);
                 mIsPlay = false;
                 return false;
+            }else {
+                updateUi.putExtra(UPDATE_UI, true);
+                sendBroadcast(updateUi);
+                mIsPlay = true;
             }
-            updateUi.putExtra(UPDATE_UI, true);
-            sendBroadcast(updateUi);
-            mIsPlay = true;
             return false;
         }
         return true;
@@ -283,12 +370,14 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void pauseMedia() {
+
         if (!changePlayNotPrepared())
             return;
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             updateUi.putExtra(UPDATE_UI, false);
             sendBroadcast(updateUi);
+            NotificationGenerator.updateButtonPlay(false);
             mIsPlay = false;
         }
 
@@ -314,13 +403,18 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public boolean handleMessage(Message msg) {
         if (msg.what == Constant.FINISH_DOWNLOAD_STREAM) {
-            setupHandler();
-            handler.postDelayed(sendUpdatesToUI, 50);
-
-            if (mIsPlay) {
-                playMedia();
-            } else {
-                pauseMedia();
+            isPrepare = true;
+            boolean allDone = true;
+            for (Future<?> future : futures) {
+                allDone &= future.isDone(); // check if future is done
+            }
+            if (allDone && TextUtils.equals(streamSong, String.valueOf(msg.obj))) {
+                handler.postDelayed(sendUpdatesToUI, 50);
+                if (mIsPlay) {
+                    playMedia();
+                } else {
+                    pauseMedia();
+                }
             }
         }
         return true;
@@ -368,4 +462,5 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             return PlaySongService.this;
         }
     }
+
 }

@@ -5,8 +5,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.cpu11268.musicapp.Model.Track;
-import com.example.cpu11268.musicapp.Music.Fragment.DetailTrackFragment;
-import com.example.cpu11268.musicapp.Music.Fragment.TrackListFragment;
+import com.example.cpu11268.musicapp.Main.Fragment.DetailTrackFragment;
+import com.example.cpu11268.musicapp.Main.Fragment.TrackListFragment;
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
     private Track track;

@@ -10,10 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.cpu11268.musicapp.Constant;
 import com.example.cpu11268.musicapp.Listener.ItemClickListener;
+import com.example.cpu11268.musicapp.Main.Activity.PlayMusicActivity;
 import com.example.cpu11268.musicapp.Model.Track;
-import com.example.cpu11268.musicapp.Music.Activity.PlayMusicActivity;
 import com.example.cpu11268.musicapp.R;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.ViewHolder.TrackHolder;
@@ -36,15 +35,16 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
     private Track trackSelect;
     private boolean isAreaLoad = false;
     private String pathLoad;
-
-    public void setArea(String pathLoad, boolean isAreaLoad){
-        this.pathLoad = pathLoad;
-        this.isAreaLoad = isAreaLoad;
-    }
+    private boolean isPlay = true;
 
     public TrackAdapter(Activity context, String flag) {
         this.context = context;
         this.flag = flag;
+    }
+
+    public void setArea(String pathLoad, boolean isAreaLoad) {
+        this.pathLoad = pathLoad;
+        this.isAreaLoad = isAreaLoad;
     }
 
     @NonNull
@@ -65,6 +65,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
         holder.getmName().setText("");
         if (trackSelect != null && TextUtils.equals(track.getStreamUrl(), trackSelect.getStreamUrl())) {
             holder.getmMenu().setVisibility(View.VISIBLE);
+            holder.getmMenu().pauseOrPlay(isPlay);
         } else {
             holder.getmMenu().setVisibility(View.GONE);
         }
@@ -82,9 +83,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                     bundle.putBoolean("STATE_LOAD", isAreaLoad);
                     bundle.putString(EXTRA_DATA, pathLoad);
                     bundle.putString(DATA_TRACK, track.getId());
-                    if(trackSelect!=null && TextUtils.equals(trackSelect.getId(), track.getId())) {
+                    if (trackSelect != null && TextUtils.equals(trackSelect.getId(), track.getId())) {
                         bundle.putInt(STATE_START_ACTIVITY_PLAY_MUSIC, 0);
-                    }else{
+                    } else {
                         bundle.putInt(STATE_START_ACTIVITY_PLAY_MUSIC, 1);
                     }
                     intent.putExtras(bundle);
@@ -94,9 +95,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                 } else {
                     if (context instanceof PlayMusicActivity) {
                         PlayMusicActivity myactivity = (PlayMusicActivity) context;
-                        if(trackSelect!=null && TextUtils.equals(trackSelect.getId(), track.getId())) {
+                        if (trackSelect != null && TextUtils.equals(trackSelect.getId(), track.getId())) {
                             myactivity.setUpTrackNotChange(track.getId());
-                        }else{
+                        } else {
                             myactivity.setUpTrack(track.getId(), 1);
                         }
                     }
@@ -108,7 +109,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
         if (track != null) {
 
             String name = track.getName();
-            if(name.toLowerCase().contains("_")) {
+            if (name.toLowerCase().contains("_")) {
                 name = name.substring(0, name.indexOf("_"));
             }
             holder.getmName().setText(name);
@@ -136,6 +137,11 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
     public void setData(List<Track> tracks) {
         this.tracks = tracks;
+        notifyDataSetChanged();
+    }
+
+    public void setPlay(boolean isPlay) {
+        this.isPlay = isPlay;
         notifyDataSetChanged();
     }
 

@@ -22,7 +22,7 @@
         android:roundIcon="@drawable/default_image"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Music.Activity.ListTrackActivity">
+        <activity android:name=".Main.Activity.ListTrackActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,7 +30,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Music.Activity.PlayMusicActivity"
+            android:name=".Main.Activity.PlayMusicActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".MainActivity" />
@@ -62,7 +62,7 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".Music.Activity.SelectFileActivity"></activity>
+        <activity android:name=".Main.Activity.SelectFileActivity"></activity>
     </application>
 
 </manifest>

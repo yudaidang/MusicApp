@@ -37,6 +37,11 @@ public class LoadApiRunnable implements Runnable {
         List<Track> tracks;
         String response = null;
         try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
             myUrl = new URL(httpUtils.getListTrackUserUrl(userId));
         } catch (MalformedURLException e) {
             e.printStackTrace();

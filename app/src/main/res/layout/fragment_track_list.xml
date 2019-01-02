@@ -4,68 +4,82 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/gradient_list"
-    tools:context=".Music.Fragment.TrackListFragment">
+    tools:context=".Main.Fragment.TrackListFragment">
+
     <ProgressBar
         android:id="@+id/loading"
+        android:layout_marginTop="55dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:padding="160dp"
         android:visibility="gone"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:theme="@style/progressAppMain"/>
+    <TextView
+        android:id="@+id/txtLoading"
+        android:layout_marginTop="55dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-        <FrameLayout
+        android:layout_height="match_parent"
+        android:text="Không có dữ liệu"
+        android:gravity="center"
+        android:visibility="gone"
+        android:textColor="@color/grey_3"
+        />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <EditText
+            android:id="@+id/search"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp">
+            android:layout_height="40dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/edit_search"
+            android:hint="Bộ lọc"
+            android:paddingLeft="40dp"
+            android:textColor="@color/background_body"
+            android:textColorHint="@color/grey_3"
+            android:textSize="14sp" />
 
-            <EditText
-                android:id="@+id/search"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_marginRight="30dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/edit_search"
-                android:hint="Bộ lọc"
-                android:paddingLeft="40dp"
-                android:textColor="@color/background_body"
-                android:textColorHint="@color/grey_3"
-                android:textSize="14sp" />
-
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="left"
-                android:layout_marginRight="30dp"
-                android:padding="10dp"
-                android:src="@drawable/ic_search"
-                android:tint="@color/background_body" />
-
-            <ImageView
-                android:id="@+id/btnClose"
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="right"
-                android:layout_marginRight="30dp"
-                android:padding="15dp"
-                android:src="@drawable/ic_if_close"
-                android:tint="@color/grey_4"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/add"
-                android:layout_width="30dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="right"
-                android:padding="7dp"
-                android:src="@drawable/ic_add"
-                android:tint="#FFFFFF" />
-        </FrameLayout>
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
+        <ImageView
+            android:layout_width="40dp"
             android:layout_height="match_parent"
-            android:layout_marginTop="55dp"
-            android:padding="5dp">
+            android:layout_gravity="left"
+            android:layout_marginRight="30dp"
+            android:padding="10dp"
+            android:src="@drawable/ic_search"
+            android:tint="@color/background_body" />
 
-        </android.support.v7.widget.RecyclerView>
+        <ImageView
+            android:id="@+id/btnClose"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:layout_marginRight="30dp"
+            android:padding="15dp"
+            android:src="@drawable/ic_if_close"
+            android:tint="@color/grey_4"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/add"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:padding="7dp"
+            android:src="@drawable/ic_add"
+            android:tint="#FFFFFF" />
+    </FrameLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="55dp"
+        android:padding="5dp">
+
+    </android.support.v7.widget.RecyclerView>
 </FrameLayout>

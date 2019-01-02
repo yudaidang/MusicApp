@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import com.example.cpu11268.musicapp.Listener.ItemClickListener;
 import com.example.cpu11268.musicapp.R;
+import com.example.cpu11268.musicapp.Utils.WaveView;
 
 public class TrackHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -14,7 +15,7 @@ public class TrackHolder extends RecyclerView.ViewHolder implements View.OnClick
     private TextView mName;
     private TextView mArtist;
     private TextView duration;
-    private ImageView mMenu;
+    private WaveView mMenu;
     private ItemClickListener itemClickListener;
 
     public TrackHolder(View itemView) {
@@ -65,11 +66,11 @@ public class TrackHolder extends RecyclerView.ViewHolder implements View.OnClick
         this.duration = duration;
     }
 
-    public ImageView getmMenu() {
+    public WaveView getmMenu() {
         return mMenu;
     }
 
-    public void setmMenu(ImageView mMenu) {
+    public void setmMenu(WaveView mMenu) {
         this.mMenu = mMenu;
     }
 

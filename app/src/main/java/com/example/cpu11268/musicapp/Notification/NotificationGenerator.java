@@ -1,35 +1,20 @@
 package com.example.cpu11268.musicapp.Notification;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.os.PowerManager;
-import android.support.v4.app.NotificationCompat;
 import android.widget.RemoteViews;
 
 import com.example.cpu11268.musicapp.Model.Track;
-import com.example.cpu11268.musicapp.Music.Activity.PlayMusicActivity;
+import com.example.cpu11268.musicapp.Main.Activity.ListTrackActivity;
 import com.example.cpu11268.musicapp.R;
-import com.example.cpu11268.musicapp.Service.PlaySongService;
-import com.example.imageloader.ImageLoader;
-
-import static android.app.Notification.FLAG_ONGOING_EVENT;
-import static android.app.Notification.VISIBILITY_PRIVATE;
-import static android.content.Context.KEYGUARD_SERVICE;
-import static android.content.Context.POWER_SERVICE;
-import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
-import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 
 public class NotificationGenerator {
     public static final String NOTIFY_PREVIOUS = "com.example.cpu11268.musicapp.Notification.previous";
@@ -45,29 +30,38 @@ public class NotificationGenerator {
     public static void updateInfo(Track track) {
         expandedViewSmall.setTextViewText(R.id.nameSong, track.getName());
         nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
+    }
 
-
+    public static void updateButtonPlay(boolean isPlay) {
+        if (isPlay) {
+            expandedViewSmall.setImageViewResource(R.id.play, R.drawable.pause_icon);
+        } else {
+            expandedViewSmall.setImageViewResource(R.id.play, R.drawable.play_icon);
+        }
+        nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
     }
 
     public static void cancelNoti() {
         nm.cancel(NOTIFICATION_ID_CUSTOM_BIG);
-
     }
 
+    public static boolean isExistNoti() {
+        return nc != null ? true : false;
+    }
 
     @SuppressLint("RestrictedApi")
     public static void customBigNotification(Context context) {
 
-         expandedViewSmall = new RemoteViews(context.getPackageName(), R.layout.small_notification);
+        expandedViewSmall = new RemoteViews(context.getPackageName(), R.layout.small_notification);
 
 
         nc = new Notification.Builder(context).build();
         nm = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
 
-        Intent notifyIntent = new Intent(context, PlayMusicActivity.class);
-        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent notifyIntent = new Intent(context, ListTrackActivity.class);
+        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notifyIntent, 0/*PendingIntent.FLAG_UPDATE_CURRENT*/);
         nc.contentIntent = pendingIntent;
         nc.contentView = expandedViewSmall;
         nc.flags = Notification.FLAG_ONGOING_EVENT;
