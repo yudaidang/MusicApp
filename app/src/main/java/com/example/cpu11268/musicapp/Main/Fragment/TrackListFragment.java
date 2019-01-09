@@ -37,9 +37,12 @@ import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 import static android.view.View.GONE;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_PRE_SONG;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_UPDATE_AREA_LOAD;
 import static com.example.cpu11268.musicapp.Constant.CHOOSE_FOLDER;
 import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
+import static com.example.cpu11268.musicapp.Constant.PATH_LOAD;
 import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI_COMMUNICATE;
@@ -116,10 +119,20 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == CHOOSE_FOLDER) {
+                String path = data.getStringExtra(EXTRA_DATA);
                 loading.setVisibility(View.VISIBLE);
                 recyclerView.setVisibility(GONE);
                 mPresenter.getTrackLocal(data.getStringExtra(EXTRA_DATA));
-                trackAdapter.setArea(data.getStringExtra(EXTRA_DATA), true);
+                trackAdapter.setArea(path, true);
+                Intent intent = new Intent(BROADCAST_UPDATE_AREA_LOAD);
+                intent.putExtra(EXTRA_DATA, true);
+                intent.putExtra(PATH_LOAD, path);
+                context.sendBroadcast(intent);
+            }else{
+                Intent intent = new Intent(BROADCAST_UPDATE_AREA_LOAD);
+                intent.putExtra(EXTRA_DATA, false);
+                intent.putExtra(PATH_LOAD, "");
+                context.sendBroadcast(intent);
             }
         }
     }
@@ -247,7 +260,6 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         super.onDestroy();
         context.unregisterReceiver(broadcastUpdateInfo);
         context.unregisterReceiver(broadcastUpdateUi);
-
     }
 
 

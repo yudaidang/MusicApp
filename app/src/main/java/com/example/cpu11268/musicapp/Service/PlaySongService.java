@@ -12,7 +12,6 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.cpu11268.musicapp.Constant;
 import com.example.cpu11268.musicapp.Model.Track;
@@ -36,6 +35,7 @@ import static com.example.cpu11268.musicapp.Constant.CURRENT_POSITION_MEDIA_PLAY
 import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.DURATION_SONG_MEDIA_PLAYER;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
+import static com.example.cpu11268.musicapp.Constant.PATH_LOAD;
 import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_SONG_CHANGE_STREAM;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI;
@@ -57,6 +57,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private List<Future<?>> futures = new ArrayList<Future<?>>();
     private BlockingQueue queueDisk;
     private String idRecent;
+    private boolean isRepeat = false;
     // Seekbar
     private int mediaPosition;
     //Intent
@@ -69,10 +70,14 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         public void run() {
             LogMediaPosition();
             handler.removeCallbacks(sendUpdatesToUI);
-            handler.postDelayed(this, 500); // 2 seconds
+            handler.postDelayed(this, 50); // 2 seconds
 
         }
     };
+
+    private String pathLoad;
+    private boolean isLocalAreaLoad = false;
+
     private ExecutorService executor;
 
     @Override
@@ -105,7 +110,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         updateInfoSong.putExtra(DATA_TRACK, track);
         updateInfoSong.putExtra(EXTRA_DATA, 1);
         sendBroadcast(updateInfoSong);
-        NotificationGenerator.updateInfo(track);
+        NotificationGenerator.updateInfo(this, track, pathLoad, isLocalAreaLoad);
 
         setStreamSong(streamSong);
     }
@@ -118,10 +123,10 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public void updateSong(Intent intent) {
-        if(!NotificationGenerator.isExistNoti()){
-            NotificationGenerator.customBigNotification(this);
-        }
         Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
+        if (!NotificationGenerator.isExistNoti()) {
+            NotificationGenerator.customBigNotification(this, track,pathLoad, isLocalAreaLoad);
+        }
         changeSong(track);
     }
 
@@ -176,7 +181,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
                     if (contains(o)) {
                         remove(o);
                     }
-                    if(queueDisk.size() > 1) {
+                    if (queueDisk.size() > 1) {
                         clear();
                     }
                     return true;
@@ -188,7 +193,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
                         remove(o);
                     }
 
-                    if(queueDisk.size() > 1) {
+                    if (queueDisk.size() > 1) {
                         clear();
                     }
                     super.putFirst(o);
@@ -199,7 +204,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
                     if (contains(o)) {
                         remove(o);
                     }
-                    if(queueDisk.size() > 0) {
+                    if (queueDisk.size() > 0) {
                         clear();
                     }
                     return offerFirst(o);
@@ -343,7 +348,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             NotificationGenerator.updateButtonPlay(true);
 
             mIsPlay = true;
-        }else{
+        } else {
             NotificationGenerator.updateButtonPlay(true);
         }
     }
@@ -357,7 +362,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
                 sendBroadcast(updateUi);
                 mIsPlay = false;
                 return false;
-            }else {
+            } else {
                 updateUi.putExtra(UPDATE_UI, true);
                 sendBroadcast(updateUi);
                 mIsPlay = true;
@@ -392,11 +397,27 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     }
 
     @Override
+    public void changeRepeat(Intent intent) {
+        isRepeat = intent.getBooleanExtra(EXTRA_DATA, false);
+    }
+
+    @Override
+    public void updateAreaLoad(Intent intent) {
+        isLocalAreaLoad = intent.getBooleanExtra(EXTRA_DATA, false);
+        pathLoad = intent.getStringExtra(PATH_LOAD);
+    }
+
+
+    @Override
     public void onSeekComplete(MediaPlayer mp) {
         if (!mediaPlayer.isPlaying()) {
-            playMedia();
-            Toast.makeText(this,
-                    "SeekComplete", Toast.LENGTH_SHORT).show();
+            if (isRepeat) {
+                nextSong();
+            } else {
+                playMedia();
+            }
+/*            Toast.makeText(this,
+                    "SeekComplete", Toast.LENGTH_SHORT).show();*/
         }
     }
 

@@ -16,6 +16,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -32,6 +34,7 @@ import com.example.cpu11268.musicapp.Utils.ViewPagerAdapter;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_PLAY;
+import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_REPEAT;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_NEXT_SONG;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_PRE_SONG;
@@ -67,6 +70,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private boolean isAreaLoad;
     private String pathLoad;
     private int statePlaying = 0;
+    private CheckBox check;
     // Set up broadcast receiver
     private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
         @Override
@@ -181,6 +185,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         listener();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("YUDAIDANG", "asdads");
+    }
+
     //Update progress second progress bar
     private void showSecondProgress(Intent bufferIntent) {
         int bufferValue = bufferIntent.getIntExtra(BUFFERING_UPDATE_PROGRESS, 0);
@@ -193,8 +203,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     }
 
     public void setUpTrack(String idTrack, int state) {
-        seekBar.setSecondaryProgress(0);
-        seekBar.setProgress(0);
+        if(state != 0) {
+            seekBar.setSecondaryProgress(0);
+            seekBar.setProgress(0);
+        }else{
+            registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_ACTION));
+        }
         statePlaying = state;
         mPresenter.getTrack(idTrack, this);
     }
@@ -210,15 +224,21 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     }
 
     private void changeSong(Track track) {
-        Intent intent = new Intent(BROADCAST_CHANGE_SONG);
-        intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
+            Intent intent = new Intent(BROADCAST_CHANGE_SONG);
+            intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
 
-        if (!mIsPlay) {
-            AnimatedVectorDrawable drawable = playToPause;
-            ic_play.setImageDrawable(drawable);
-            drawable.start();
-        }
-        mIsPlay = true;
+            if (!mIsPlay) {
+                AnimatedVectorDrawable drawable = playToPause;
+                ic_play.setImageDrawable(drawable);
+                drawable.start();
+            }
+            mIsPlay = true;
+            sendBroadcast(intent);
+    }
+
+    private void changeLoop(){
+        Intent intent = new Intent(BROADCAST_CHANGE_REPEAT);
+        intent.putExtra(EXTRA_DATA, check.isChecked());
         sendBroadcast(intent);
     }
 
@@ -232,6 +252,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
 
     private void listener() {
+        check.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                changeLoop();
+            }
+        });
         ic_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -364,6 +390,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         artist = findViewById(R.id.artist);
         playToPause = (AnimatedVectorDrawable) getDrawable(R.drawable.play_to_pause_anim);
         pauseToPlay = (AnimatedVectorDrawable) getDrawable(R.drawable.pause_to_play_anim);
+        check = findViewById(R.id.check);
     }
 
     @Override

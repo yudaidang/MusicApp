@@ -12,6 +12,7 @@
 
         <ImageView
             android:id="@+id/image"
+            android:padding="5dp"
             android:layout_width="50dp"
             android:layout_height="match_parent"
             android:src="@mipmap/ic_launcher" />

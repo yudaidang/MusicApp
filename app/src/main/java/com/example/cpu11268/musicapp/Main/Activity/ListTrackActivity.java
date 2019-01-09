@@ -48,7 +48,6 @@ public class ListTrackActivity extends BaseActivity {
             // Phương thức này được hệ thống gọi khi kết nối tới service thành công
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                PlaySongService.MyBinder binder = (PlaySongService.MyBinder) service;
 
             }
         };

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -15,9 +14,10 @@ import java.util.Random;
 public class WaveView extends View {
     private boolean isFirst = true;
     private int height = 0, height1 = 0, height2 = 0, height3 = 0;
-    private final int duration = 1;
+    private boolean run = false, run1 = false, run2 = false, run3 = false;
     private Random rand = new Random();
     private boolean isPlay = true;
+
     public WaveView(Context context) {
         super(context);
     }
@@ -34,11 +34,11 @@ public class WaveView extends View {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public void pauseOrPlay(boolean is){
-        if(is){
+    public void pauseOrPlay(boolean is) {
+        if (is) {
             invalidate();
             isPlay = is;
-        }else{
+        } else {
             isPlay = is;
         }
     }
@@ -55,21 +55,48 @@ public class WaveView extends View {
             height3 = maxheight / 2;
             isFirst = false;
         } else {
-            height -= rand.nextInt(3) + 1;
             if (height < 0) {
-                height = maxheight;
+                run = true;
+            } else if (height > maxheight) {
+                run = false;
             }
-            height1 -= rand.nextInt(3) + 1;
+            if (!run) {
+                height --;
+            } else {
+                height ++;
+            }
+            //
             if (height1 < 0) {
-                height1 = maxheight;
+                run1 = true;
+            } else if (height1 > maxheight) {
+                run1 = false;
             }
-            height2 -= rand.nextInt(3) + 1;
+            if (!run1) {
+                height1 --;
+            } else {
+                height1 ++;
+            }
+            //
             if (height2 < 0) {
-                height2 = maxheight;
+                run2 = true;
+            } else if (height2 > maxheight) {
+                run2 = false;
             }
-            height3 -= rand.nextInt(3) + 1;
+            if (!run2) {
+                height2 --;
+            } else {
+                height2 ++;
+            }
+            //
             if (height3 < 0) {
-                height3 = maxheight;
+                run3 = true;
+            } else if (height3 > maxheight) {
+                run3 = false;
+            }
+            if (!run3) {
+                height3 --;
+            } else {
+                height3 ++;
             }
         }
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -100,11 +127,11 @@ public class WaveView extends View {
         rect3.top = height3;
         rect3.bottom = maxheight;
 
-        canvas.drawRoundRect(rect,10 ,10,paint);
-        canvas.drawRoundRect(rect1,10 ,10,paint);
-        canvas.drawRoundRect(rect2,10 ,10,paint);
-        canvas.drawRoundRect(rect3,10 ,10,paint);
-        if(isPlay) {
+        canvas.drawRoundRect(rect, 10, 10, paint);
+        canvas.drawRoundRect(rect1, 10, 10, paint);
+        canvas.drawRoundRect(rect2, 10, 10, paint);
+        canvas.drawRoundRect(rect3, 10, 10, paint);
+        if (isPlay) {
             invalidate();
         }
     }

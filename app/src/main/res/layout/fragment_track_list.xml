@@ -8,10 +8,10 @@
 
     <ProgressBar
         android:id="@+id/loading"
-        android:layout_marginTop="55dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="160dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:padding="0dp"
+        android:layout_gravity="center"
         android:visibility="gone"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:theme="@style/progressAppMain"/>

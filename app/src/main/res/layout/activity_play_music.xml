@@ -128,12 +128,20 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="250dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:orientation="horizontal"
-            android:padding="15dp">
+            android:padding="10dp"
+            >
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                >
 
+            </LinearLayout>
             <ImageView
                 android:id="@+id/ic_pre"
                 android:layout_width="0dp"
@@ -159,6 +167,21 @@
                 android:padding="10dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_next" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                >
+                <CheckBox
+                    android:id="@+id/check"
+                    android:button="@drawable/state_loop"
+                    android:scaleY="1.2"
+                    android:scaleX="1.2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

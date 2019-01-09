@@ -18,4 +18,9 @@ public interface IPlaySongContract {
     void pauseMedia();
 
     void updateNotChangeSong(Intent intent);
+
+    void changeRepeat(Intent intent);
+
+    void updateAreaLoad(Intent intent);
+
 }
