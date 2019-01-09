@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -69,9 +68,10 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private ViewPagerAdapter viewPagerAdapter;
     private boolean isAreaLoad;
     private String pathLoad;
-    private int statePlaying = 0;
+    private boolean DiffSongIsPlaying = false;
     private CheckBox check;
-    // Set up broadcast receiver
+
+
     private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent bufferIntent) {
@@ -97,6 +97,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         }
     };
 
+
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void setStatusBarGradiant(Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -109,22 +111,16 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
     private void updateUI(Intent serviceIntent) {
         boolean isPlay = serviceIntent.getBooleanExtra(UPDATE_UI, false);
         if (isPlay != mIsPlay) {
             AnimatedVectorDrawable drawable = isPlay ? playToPause : pauseToPlay;
             ic_play.setImageDrawable(drawable);
             drawable.start();
+            mIsPlay = isPlay;
             if (isPlay) {
-                mIsPlay = true;
                 ic_play.setSelected(false);
             } else {
-                mIsPlay = false;
                 ic_play.setSelected(true);
             }
         }
@@ -132,7 +128,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
     private void updateInfo(Intent serviceIntent) {
         Track track = (Track) serviceIntent.getSerializableExtra(DATA_TRACK);
-        statePlaying = serviceIntent.getIntExtra(EXTRA_DATA,1);
+        DiffSongIsPlaying = serviceIntent.getBooleanExtra(EXTRA_DATA, true);
         String name = track.getName();
         if (name.toLowerCase().contains("_")) {
             name = name.substring(0, name.indexOf("_"));
@@ -144,7 +140,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             artist.setText(track.getArtist());
         }
 
-        if(statePlaying == 1) {
+        if(DiffSongIsPlaying) {
             seekBar.setProgress(0);
             seekBar.setSecondaryProgress(0);
         }
@@ -154,11 +150,18 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         int currentPosition = serviceIntent.getIntExtra(CURRENT_POSITION_MEDIA_PLAYER, 0);
         int durationReceiver = serviceIntent.getIntExtra(DURATION_SONG_MEDIA_PLAYER, 0);
         int seekProgress = currentPosition;
-        currentTime.setText(Utils.getInstance().millisecondsToString(currentPosition));
+        if(!TextUtils.equals(Utils.getInstance().millisecondsToString(currentPosition), currentTime.getText().toString().trim())){
+            currentTime.setText(Utils.getInstance().millisecondsToString(currentPosition));
+        }
         int duration = durationReceiver;
-        maxTime.setText(Utils.getInstance().millisecondsToString(duration));
-        seekBar.setMax(duration);
-        seekBar.setProgress(seekProgress);
+        if(!TextUtils.equals(Utils.getInstance().millisecondsToString(duration), maxTime.getText().toString())){
+            maxTime.setText(Utils.getInstance().millisecondsToString(duration));
+            seekBar.setMax(duration);
+        }
+
+        if(seekProgress != seekBar.getProgress()){
+            seekBar.setProgress(seekProgress);
+        }
     }
 
     @Override
@@ -176,8 +179,8 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
         mPresenter = new PlayMusicPresenter();
         mPresenter.attachView(this);
-        statePlaying = bundle.getInt(STATE_START_ACTIVITY_PLAY_MUSIC);
-        setUpTrack(idTrack, statePlaying);
+        DiffSongIsPlaying = bundle.getBoolean(STATE_START_ACTIVITY_PLAY_MUSIC);
+        setUpSong(idTrack, DiffSongIsPlaying);
 
         intent = new Intent(BROADCAST_SEEKBAR);
         intentIsPlay = new Intent(BROADCAST_CHANGE_PLAY);
@@ -185,32 +188,20 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         listener();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d("YUDAIDANG", "asdads");
-    }
-
-    //Update progress second progress bar
     private void showSecondProgress(Intent bufferIntent) {
         int bufferValue = bufferIntent.getIntExtra(BUFFERING_UPDATE_PROGRESS, 0);
         seekBar.setSecondaryProgress(bufferValue);
     }
 
-    public void setUpTrackNotChange(String idTrack) {
-        statePlaying = 0;
-        mPresenter.getTrack(idTrack, this);
-    }
-
-    public void setUpTrack(String idTrack, int state) {
-        if(state != 0) {
+    public void setUpSong(String idSong, boolean DiffSongIsPlaying){
+        this.DiffSongIsPlaying = DiffSongIsPlaying;
+        if(DiffSongIsPlaying){
             seekBar.setSecondaryProgress(0);
             seekBar.setProgress(0);
         }else{
             registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_ACTION));
         }
-        statePlaying = state;
-        mPresenter.getTrack(idTrack, this);
+        mPresenter.getTrack(idSong, this);
     }
 
     private void nextSong() {
@@ -243,11 +234,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     }
 
     private void changePlay() {
-        if (ic_play.isSelected()) {
-            play();
-        } else {
-            pause();
-        }
+        sendBroadcast(intentIsPlay);
     }
 
 
@@ -325,14 +312,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
         });
     }
 
-    private void play() {
-        sendBroadcast(intentIsPlay);
-    }
-
-    private void pause() {
-        sendBroadcast(intentIsPlay);
-    }
-
     @Override
     public void showData(final Track track) {
         if (!firstDisplay) {
@@ -365,7 +344,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             artist.setText(track.getArtist());
         }
 
-        if(statePlaying != 0) {
+        if(DiffSongIsPlaying) {
             seekBar.setProgress(0);
             changeSong(track);
         }else{
@@ -373,7 +352,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             intent.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
             sendBroadcast(intent);
         }
-        statePlaying = 1;
+        DiffSongIsPlaying = true;
     }
 
     @Override
@@ -395,7 +374,6 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
     @Override
     protected void onDestroy() {
-
         unregisterReceiver(broadcastBufferReceiver);
         unregisterReceiver(broadcastSeekBarReceiver);
         unregisterReceiver(broadcastUpdateUi);

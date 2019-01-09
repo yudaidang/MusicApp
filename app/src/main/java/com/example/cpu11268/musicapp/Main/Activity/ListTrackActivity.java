@@ -33,19 +33,14 @@ public class ListTrackActivity extends BaseActivity {
         fragment = new TrackListFragment();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.frame_container, fragment, CALL_FROM_TRACK_LIST_ACTIVITY)
-                .addToBackStack(null)
                 .commit();
 
         intentService = new Intent(this, PlaySongService.class);
         connection = new ServiceConnection() {
-
-            // Phương thức này được hệ thống gọi khi kết nối tới service bị lỗi
             @Override
             public void onServiceDisconnected(ComponentName name) {
 
             }
-
-            // Phương thức này được hệ thống gọi khi kết nối tới service thành công
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
 
@@ -59,9 +54,9 @@ public class ListTrackActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1) {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(ListTrackActivity.this, "Permision Write File is Granted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ListTrackActivity.this, "Yêu cầu được chấp nhận", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(ListTrackActivity.this, "Permision Write File is Denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ListTrackActivity.this, "Yêu cầu bị từ chối", Toast.LENGTH_SHORT).show();
 
             }
         } else {
@@ -74,7 +69,7 @@ public class ListTrackActivity extends BaseActivity {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 if (shouldShowRequestPermissionRationale(
                         Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    Toast.makeText(ListTrackActivity.this, "Permission isn't granted ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ListTrackActivity.this, "Yêu cầu chưa được chấp nhận ", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     Toast.makeText(ListTrackActivity.this, "Permisson don't granted and dont show dialog again ", Toast.LENGTH_SHORT).show();

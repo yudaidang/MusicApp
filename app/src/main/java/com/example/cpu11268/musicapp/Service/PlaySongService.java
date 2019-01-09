@@ -345,11 +345,11 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             handler.postDelayed(sendUpdatesToUI, 50);
             updateUi.putExtra(UPDATE_UI, true);
             sendBroadcast(updateUi);
-            NotificationGenerator.updateButtonPlay(true);
+            NotificationGenerator.updateButtonPlay(true, this);
 
             mIsPlay = true;
         } else {
-            NotificationGenerator.updateButtonPlay(true);
+            NotificationGenerator.updateButtonPlay(true, this);
         }
     }
 
@@ -382,7 +382,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             mediaPlayer.pause();
             updateUi.putExtra(UPDATE_UI, false);
             sendBroadcast(updateUi);
-            NotificationGenerator.updateButtonPlay(false);
+            NotificationGenerator.updateButtonPlay(false, this);
             mIsPlay = false;
         }
 
@@ -391,7 +391,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     @Override
     public void updateNotChangeSong(Intent intent) {
         Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
-        updateInfoSong.putExtra(EXTRA_DATA, 0);
+        updateInfoSong.putExtra(EXTRA_DATA, false);
         updateInfoSong.putExtra(DATA_TRACK, track);
         sendBroadcast(updateInfoSong);
     }

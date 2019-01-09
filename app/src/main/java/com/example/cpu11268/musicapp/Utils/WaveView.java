@@ -43,15 +43,15 @@ public class WaveView extends View {
         }
     }
 
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         int maxheight = getHeight();
-
         if (isFirst) {
             height = maxheight / 2;
             height1 = maxheight / 3;
-            height2 = maxheight;
+            height2 = maxheight / 6;
             height3 = maxheight / 2;
             isFirst = false;
         } else {
@@ -61,9 +61,9 @@ public class WaveView extends View {
                 run = false;
             }
             if (!run) {
-                height --;
+                height--;
             } else {
-                height ++;
+                height++;
             }
             //
             if (height1 < 0) {
@@ -72,9 +72,9 @@ public class WaveView extends View {
                 run1 = false;
             }
             if (!run1) {
-                height1 --;
+                height1--;
             } else {
-                height1 ++;
+                height1++;
             }
             //
             if (height2 < 0) {
@@ -83,9 +83,9 @@ public class WaveView extends View {
                 run2 = false;
             }
             if (!run2) {
-                height2 --;
+                height2--;
             } else {
-                height2 ++;
+                height2++;
             }
             //
             if (height3 < 0) {
@@ -94,9 +94,9 @@ public class WaveView extends View {
                 run3 = false;
             }
             if (!run3) {
-                height3 --;
+                height3--;
             } else {
-                height3 ++;
+                height3++;
             }
         }
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);

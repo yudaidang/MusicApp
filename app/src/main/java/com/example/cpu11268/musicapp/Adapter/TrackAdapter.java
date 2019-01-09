@@ -84,9 +84,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                     bundle.putString(EXTRA_DATA, pathLoad);
                     bundle.putString(DATA_TRACK, track.getId());
                     if (trackSelect != null && TextUtils.equals(trackSelect.getId(), track.getId())) {
-                        bundle.putInt(STATE_START_ACTIVITY_PLAY_MUSIC, 0);
+                        bundle.putBoolean(STATE_START_ACTIVITY_PLAY_MUSIC, false);
                     } else {
-                        bundle.putInt(STATE_START_ACTIVITY_PLAY_MUSIC, 1);
+                        bundle.putBoolean(STATE_START_ACTIVITY_PLAY_MUSIC, true);
                     }
                     intent.putExtras(bundle);
                     context.startActivityForResult(intent, BACK_LIST_TRACK);
@@ -96,9 +96,11 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                     if (context instanceof PlayMusicActivity) {
                         PlayMusicActivity myactivity = (PlayMusicActivity) context;
                         if (trackSelect != null && TextUtils.equals(trackSelect.getId(), track.getId())) {
-                            myactivity.setUpTrackNotChange(track.getId());
+                            myactivity.setUpSong(track.getId(), false);
+//                            myactivity.setUpTrackNotChange(track.getId());
                         } else {
-                            myactivity.setUpTrack(track.getId(), 1);
+                            myactivity.setUpSong(track.getId(), true);
+//                            myactivity.setUpTrack(track.getId(), 1);
                         }
                     }
                 }

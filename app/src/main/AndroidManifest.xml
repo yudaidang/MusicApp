@@ -68,7 +68,6 @@
         <activity
             android:name=".Main.Activity.SelectFileActivity"
             android:parentActivityName=".Main.Activity.ListTrackActivity" />
-        <activity android:name=".Main.Activity.NotificationActivity"></activity>
     </application>
 
 </manifest>
