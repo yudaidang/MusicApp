@@ -56,7 +56,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private IBinder binder;
     private List<Future<?>> futures = new ArrayList<Future<?>>();
     private BlockingQueue queueDisk;
-    private String idRecent;
     private boolean isRepeat = false;
     // Seekbar
     private int mediaPosition;
@@ -345,11 +344,11 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             handler.postDelayed(sendUpdatesToUI, 50);
             updateUi.putExtra(UPDATE_UI, true);
             sendBroadcast(updateUi);
-            NotificationGenerator.updateButtonPlay(true, this);
+            NotificationGenerator.updateButtonPlay(true);
 
             mIsPlay = true;
         } else {
-            NotificationGenerator.updateButtonPlay(true, this);
+            NotificationGenerator.updateButtonPlay(true);
         }
     }
 
@@ -382,7 +381,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             mediaPlayer.pause();
             updateUi.putExtra(UPDATE_UI, false);
             sendBroadcast(updateUi);
-            NotificationGenerator.updateButtonPlay(false, this);
+            NotificationGenerator.updateButtonPlay(false);
             mIsPlay = false;
         }
 
@@ -416,8 +415,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             } else {
                 playMedia();
             }
-/*            Toast.makeText(this,
-                    "SeekComplete", Toast.LENGTH_SHORT).show();*/
         }
     }
 

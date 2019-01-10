@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
@@ -34,7 +35,7 @@ public class NotificationGenerator {
     private static final int ID_PENDING = 1;
 
     private static Intent intent;
-    private static Notification nc;
+    private static NotificationCompat.Builder nc;
     private static RemoteViews expandedViewSmall;
     private static NotificationManager nm;
     private static Track trackInfo;
@@ -45,19 +46,23 @@ public class NotificationGenerator {
         expandedViewSmall.setTextViewText(R.id.nameSong, track.getName());
         PendingIntent pendingIntent =
                 getCommentPendingIntent(context, pathLoad, isLocalAreaLoad);
-        nc.contentIntent = pendingIntent;
-        nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
+        nc.setContentIntent(pendingIntent);
+//        nc.contentIntent = pendingIntent;
+
+        nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc.build());
     }
 
-    public static void updateButtonPlay(boolean isPlay, Context context) {
+    public static void updateButtonPlay(boolean isPlay) {
         if (isPlay) {
             expandedViewSmall.setImageViewResource(R.id.play, R.drawable.pause_icon);
-            nc.flags = FLAG_ONGOING_EVENT; //?
-            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
+            Notification noti = nc.build();
+            noti.flags = FLAG_ONGOING_EVENT;
+            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, noti);
         } else {
             expandedViewSmall.setImageViewResource(R.id.play, R.drawable.play_icon);
-            nc.flags = FLAG_AUTO_CANCEL; //?
-            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
+            Notification noti = nc.build();
+            noti.flags = FLAG_AUTO_CANCEL;
+            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, noti);
         }
 
     }
@@ -84,9 +89,12 @@ public class NotificationGenerator {
     @SuppressLint("RestrictedApi")
     public static void customBigNotification(Context context, Track track, String pathLoad, boolean isLocalAreaLoad) {
         trackInfo = track;
-        expandedViewSmall = new RemoteViews(context.getPackageName(), R.layout.small_notification);
 
-        nc = new Notification.Builder(context).build();
+        expandedViewSmall = new RemoteViews(context.getPackageName(), R.layout.small_notification);
+        expandedViewSmall.setImageViewResource(R.id.play, R.drawable.pause_icon);
+
+        nc = new NotificationCompat.Builder(context);
+//        nc = new Notification.Builder(context).setContentTitle("Music App").build();
         nm = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
 
         Intent notifyIntent = new Intent(context, ListTrackActivity.class);
@@ -95,11 +103,20 @@ public class NotificationGenerator {
 
         PendingIntent pendingIntent =
                 getCommentPendingIntent(context, pathLoad, isLocalAreaLoad);
-        nc.contentIntent = pendingIntent;
-        nc.contentView = expandedViewSmall;
-        nc.flags = FLAG_ONGOING_EVENT;
-        nc.icon = R.drawable.default_image;
-        nc.largeIcon = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
+        nc.setContentTitle("Music App");
+        nc.setContentIntent(pendingIntent);
+//        nc.setCustomContentView(expandedViewSmall);
+//        nc.setCustomHeadsUpContentView(expandedViewSmall);
+        nc.setSmallIcon(R.drawable.default_image);
+        nc.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image));
+        nc.setCustomBigContentView(expandedViewSmall);
+        Notification noti = nc.build();
+        noti.flags = FLAG_ONGOING_EVENT;
+//        nc.contentIntent = pendingIntent;
+//        nc.contentView = expandedViewSmall;
+//        nc.flags = FLAG_ONGOING_EVENT;
+//        nc.icon = R.drawable.default_image;
+//        nc.largeIcon = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
         if (TextUtils.isEmpty(track.getmImage().trim())) {
             expandedViewSmall.setImageViewResource(R.id.image, R.drawable.default_image);
         }

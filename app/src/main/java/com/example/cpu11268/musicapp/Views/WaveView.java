@@ -12,9 +12,6 @@ import java.util.Random;
 
 public class WaveView extends View {
     private boolean isFirst = true;
-    private Integer height = 0, height1 = 0, height2 = 0, height3 = 0;
-    private boolean run = false, run1 = false, run2 = false, run3 = false;
-    private Random rand = new Random();
     private boolean isPlay = true;
     private ItemWaveView item1, item2, item3, item4;
 
@@ -36,11 +33,11 @@ public class WaveView extends View {
 
     public void pauseOrPlay(boolean is) {
         if (is) {
-            invalidate();
             isPlay = is;
         } else {
             isPlay = is;
         }
+        invalidate();
     }
 
 
@@ -55,11 +52,10 @@ public class WaveView extends View {
         paint.setColor(Color.MAGENTA);
         //? clean
         if (isFirst) {
-
-            item1 = new ItemWaveView(0, width * 2, maxheight / 2, maxheight, paint, maxheight);
-            item2 = new ItemWaveView(width * 3, width * 5, maxheight / 6, maxheight, paint, maxheight);
-            item3 = new ItemWaveView(width * 6, width * 8, maxheight / 3, maxheight, paint, maxheight);
-            item4 = new ItemWaveView(width * 9, width * 11, maxheight / 2, maxheight, paint, maxheight);
+            item1 = new ItemWaveView(0, width * 2, maxheight / 2, maxheight, paint, maxheight, canvas);
+            item2 = new ItemWaveView(width * 3, width * 5, maxheight / 6, maxheight, paint, maxheight, canvas);
+            item3 = new ItemWaveView(width * 6, width * 8, maxheight / 3, maxheight, paint, maxheight, canvas);
+            item4 = new ItemWaveView(width * 9, width * 11, maxheight / 2, maxheight, paint, maxheight, canvas);
             isFirst = false;
         } else {
             item1.UpdateUi(canvas);
