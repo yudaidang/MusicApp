@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.example.cpu11268.musicapp.Listener.ItemClickListener;
 import com.example.cpu11268.musicapp.R;
-import com.example.cpu11268.musicapp.Utils.WaveView;
+import com.example.cpu11268.musicapp.Views.WaveView;
 
 public class TrackHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 

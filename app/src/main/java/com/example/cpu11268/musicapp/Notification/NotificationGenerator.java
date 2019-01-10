@@ -112,7 +112,7 @@ public class NotificationGenerator {
                 nm.createNotificationChannel(channel);
             }
         }
-        
+
         setListeners(expandedViewSmall
                 , context);
 
