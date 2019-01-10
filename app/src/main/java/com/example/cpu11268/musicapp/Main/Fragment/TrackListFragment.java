@@ -13,6 +13,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -59,14 +60,14 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
     private Track selectTrack;
     private BroadcastReceiver broadcastUpdateInfo = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent bufferIntent) {
+        public void onReceive(Context context, Intent bufferIntent) { //? opt
             updateInfo(bufferIntent);
         }
     };
 
     private BroadcastReceiver broadcastUpdateUi = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent serviceIntent) {
+        public void onReceive(Context context, Intent serviceIntent) {  //? opt
             updateUI(serviceIntent);
         }
     };
@@ -75,7 +76,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
     private String idTrack;
     private Handler handler;
 
-    private void updateUI(Intent serviceIntent) {
+    private void updateUI(Intent serviceIntent) { //? clear name
         boolean isPlay = serviceIntent.getBooleanExtra(UPDATE_UI, false);
         trackAdapter.setPlay(isPlay);
     }
@@ -98,7 +99,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         }
     }
 
-    private void updateInfo(Intent serviceIntent) {
+    private void updateInfo(Intent serviceIntent) { //? clear name
         selectTrack = (Track) serviceIntent.getSerializableExtra(DATA_TRACK);
         trackAdapter.setTrack(selectTrack);
     }
@@ -108,8 +109,8 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         super.onCreate(savedInstanceState);
         handler = new Handler(this);
         context = this.getContext();
-        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));
-        context.registerReceiver(broadcastUpdateUi, new IntentFilter(UPDATE_UI_COMMUNICATE));
+        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));//? opt
+        context.registerReceiver(broadcastUpdateUi, new IntentFilter(UPDATE_UI_COMMUNICATE));//? opt
 
 
     }
@@ -195,7 +196,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                //? opt: delay time
                 if (!TextUtils.isEmpty(s.toString())) {
                     btnClose.setVisibility(View.VISIBLE);
                 } else {

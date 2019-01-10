@@ -30,6 +30,7 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_file);
         init();
+
         rootPath = Environment.getExternalStorageDirectory().getPath().toString();
         path.setText(rootPath);
         close.setOnClickListener(new View.OnClickListener() {
@@ -51,7 +52,7 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
                     }
                     path.setText(temp);
                     nowPath = temp;
-                    mAdapter.setData(getListFiles(nowPath));
+                    mAdapter.setData(getListFiles(nowPath));  //? setup on main thread?
                 }
             }
         });
@@ -59,7 +60,7 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
         recyclerView.setLayoutManager(manager);
         mAdapter = new FileChooseAdapter(this, this);
         recyclerView.setAdapter(mAdapter);
-        mAdapter.setData(getListFiles(rootPath));
+        mAdapter.setData(getListFiles(rootPath));  //? setup on main thread?
     }
 
     private void init() {
@@ -70,7 +71,7 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
 
     }
 
-    private ArrayList<String> getListFiles(String path) {
+    private ArrayList<String> getListFiles(String path) { //? bg worker ?
         ArrayList<String> result = new ArrayList<>();
         File folder = new File(path);
         File[] filesInFolder = folder.listFiles();

@@ -52,11 +52,11 @@ public class NotificationGenerator {
     public static void updateButtonPlay(boolean isPlay, Context context) {
         if (isPlay) {
             expandedViewSmall.setImageViewResource(R.id.play, R.drawable.pause_icon);
-            nc.flags = FLAG_ONGOING_EVENT;
+            nc.flags = FLAG_ONGOING_EVENT; //?
             nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
         } else {
             expandedViewSmall.setImageViewResource(R.id.play, R.drawable.play_icon);
-            nc.flags = FLAG_AUTO_CANCEL;
+            nc.flags = FLAG_AUTO_CANCEL; //?
             nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
         }
 
@@ -116,7 +116,7 @@ public class NotificationGenerator {
         setListeners(expandedViewSmall
                 , context);
 
-        ((Service) context).startForeground(NOTIFICATION_ID_CUSTOM_BIG, nc);
+        ((Service) context).startForeground(NOTIFICATION_ID_CUSTOM_BIG, nc);  //? stop?
 
     }
 

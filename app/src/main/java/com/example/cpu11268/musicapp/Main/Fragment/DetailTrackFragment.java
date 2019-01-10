@@ -35,7 +35,7 @@ public class DetailTrackFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this.getContext();
-        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));
+        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));//? opt
     }
 
     private void updateInfo(Intent serviceIntent) {

@@ -50,9 +50,10 @@ public class WaveView extends View {
         int maxheight = getHeight();
         int width = getWidth() / 11;
 
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG); //? performance
         paint.setStrokeWidth(10);
         paint.setColor(Color.MAGENTA);
+        //? clean
         if (isFirst) {
 
             item1 = new ItemWaveView(0, width * 2, maxheight / 2, maxheight, paint, maxheight);

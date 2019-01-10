@@ -15,18 +15,19 @@ import java.util.List;
 
 import static com.example.cpu11268.musicapp.Constant.LOAD_TRACKLOCAL;
 
+//?
 public class TrackListPresenter extends BasePresenter<ITrackListContract.View> implements ITrackListContract.Presenter, Handler.Callback {
     private Handler mHandler;
 
     @Override
-    public void getTrack() {
+    public void getTrack() { //? clean
         mHandler = new Handler(this);
 
         LoadApiRunnable loadApiRunnable = new LoadApiRunnable(mHandler);
         new Thread(loadApiRunnable).start();
     }
 
-    public void getTrackLocal(String path) {
+    public void getTrackLocal(String path) { //? clean
         mHandler = new Handler(this);
         GetTrackLocal getTrackLocal = new GetTrackLocal(path, mHandler);
         new Thread(getTrackLocal).start();
@@ -36,8 +37,10 @@ public class TrackListPresenter extends BasePresenter<ITrackListContract.View> i
     public void search(String key) {
         List<Track> tracks = DataTrack.getInstance().getTracks();
         if (tracks == null) {
-            return;
+            return; //? then?
         }
+
+        //? should bg worker?
         List<Track> results = new ArrayList<>();
         String trimKey = key.replaceAll("\\s{2,}", " ").trim();
         String[] splitKeys = trimKey.toLowerCase().split(" ");
@@ -46,7 +49,7 @@ public class TrackListPresenter extends BasePresenter<ITrackListContract.View> i
                 results.add(track);
             }
         }
-        mView.showData(results);
+        mView.showData(results); //? mView?
     }
 
     private boolean checkContain(String[] splitKey, String name) {

@@ -74,7 +74,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
         holder.getmImage().setImageBitmap(null);
         holder.setItemClickListener(new ItemClickListener() {
             @Override
-            public void onClick(View view, int position, boolean isLongClick) {
+            public void onClick(View view, int position, boolean isLongClick) { //?
                 DataTrack.getInstance().setTracks(tracks);
                 if (TextUtils.equals(flag, "ListTrackActivity")) {
                     Intent intent = new Intent(context, PlayMusicActivity.class);
@@ -94,12 +94,12 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
                 } else {
                     if (context instanceof PlayMusicActivity) {
-                        PlayMusicActivity myactivity = (PlayMusicActivity) context;
+                        PlayMusicActivity myactivity = (PlayMusicActivity) context;  //?
                         if (trackSelect != null && TextUtils.equals(trackSelect.getId(), track.getId())) {
-                            myactivity.setUpSong(track.getId(), false);
+                            myactivity.setUpSong(track.getId(), false); //?
 //                            myactivity.setUpTrackNotChange(track.getId());
                         } else {
-                            myactivity.setUpSong(track.getId(), true);
+                            myactivity.setUpSong(track.getId(), true); //?
 //                            myactivity.setUpTrack(track.getId(), 1);
                         }
                     }
@@ -144,7 +144,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
     public void setPlay(boolean isPlay) {
         this.isPlay = isPlay;
-        notifyDataSetChanged();
+        notifyDataSetChanged(); //? opt
     }
 
 }

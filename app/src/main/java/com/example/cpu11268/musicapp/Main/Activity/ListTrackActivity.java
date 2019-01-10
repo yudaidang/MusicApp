@@ -46,7 +46,7 @@ public class ListTrackActivity extends BaseActivity {
 
             }
         };
-        bindService(intentService, connection, Context.BIND_AUTO_CREATE);
+        bindService(intentService, connection, Context.BIND_AUTO_CREATE); //? research Service
 
     }
 
@@ -54,7 +54,7 @@ public class ListTrackActivity extends BaseActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1) {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(ListTrackActivity.this, "Yêu cầu được chấp nhận", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ListTrackActivity.this, "Yêu cầu được chấp nhận", Toast.LENGTH_SHORT).show(); //? resource qualifier
             } else {
                 Toast.makeText(ListTrackActivity.this, "Yêu cầu bị từ chối", Toast.LENGTH_SHORT).show();
 
