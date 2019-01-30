@@ -26,10 +26,12 @@ import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.Main.Presenter.PlayMusicPresenter;
 import com.example.cpu11268.musicapp.Main.Views.IPlayMusicContract;
 import com.example.cpu11268.musicapp.R;
+import com.example.cpu11268.musicapp.Service.PlaySongService;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.Utils.Utils;
 import com.example.cpu11268.musicapp.Utils.ViewPagerAdapter;
 
+import static com.example.cpu11268.musicapp.Constant.ACTION_STOP_FOREGROUND_SERVICE;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_ACTION;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_BUFFER;
 import static com.example.cpu11268.musicapp.Constant.BROADCAST_CHANGE_PLAY;
@@ -70,30 +72,37 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
     private String pathLoad;
     private boolean DiffSongIsPlaying = false;
     private CheckBox check;
+    private Track track;
 
 
-    private BroadcastReceiver broadcastBufferReceiver = new BroadcastReceiver() {
+//CHANGE
+
+    private BroadcastReceiver broadcastReceiverChange = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent bufferIntent) {  //? opt
-            showSecondProgress(bufferIntent);
+        public void onReceive(Context context, Intent intent) {
+            if (TextUtils.equals(intent.getAction(), BROADCAST_BUFFER)) {
+                showSecondProgress(intent);
+            }
+
+            if (TextUtils.equals(intent.getAction(), BROADCAST_ACTION)) {
+                updateUISeekbar(intent);
+            }
+
+            if (TextUtils.equals(intent.getAction(), UPDATE_UI_COMMUNICATE)) {
+                updateUI(intent);
+            }
+
+            if (TextUtils.equals(intent.getAction(), UPDATEINFO)) {
+                updateInfo(intent);
+            }
         }
     };
-    private BroadcastReceiver broadcastUpdateInfo = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent bufferIntent) {  //? opt
-            updateInfo(bufferIntent);
-        }
-    };
+
+    //
     private BroadcastReceiver broadcastSeekBarReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent serviceIntent) {  //? opt
             updateUISeekbar(serviceIntent);
-        }
-    };
-    private BroadcastReceiver broadcastUpdateUi = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent serviceIntent) {  //? opt
-            updateUI(serviceIntent);
         }
     };
 
@@ -320,10 +329,12 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             firstDisplay = true;
         }
 
-        registerReceiver(broadcastBufferReceiver, new IntentFilter(BROADCAST_BUFFER)); //?
-        registerReceiver(broadcastSeekBarReceiver, new IntentFilter(BROADCAST_ACTION));  //?
-        registerReceiver(broadcastUpdateUi, new IntentFilter(UPDATE_UI_COMMUNICATE));  //?
-        registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));  //?
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BROADCAST_BUFFER);
+        intentFilter.addAction(BROADCAST_ACTION);
+        intentFilter.addAction(UPDATE_UI_COMMUNICATE);
+        intentFilter.addAction(UPDATEINFO);
+        registerReceiver(broadcastReceiverChange, intentFilter);
 
 
         if (track == null) {
@@ -353,6 +364,7 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
             sendBroadcast(intent);
         }
         DiffSongIsPlaying = true;
+        this.track = track;
     }
 
     @Override
@@ -374,10 +386,10 @@ public class PlayMusicActivity extends BaseActivity implements IPlayMusicContrac
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(broadcastBufferReceiver);
-        unregisterReceiver(broadcastSeekBarReceiver);
-        unregisterReceiver(broadcastUpdateUi);
-        unregisterReceiver(broadcastUpdateInfo);
+        unregisterReceiver(broadcastReceiverChange);
+        Intent intSer = new Intent(this, PlaySongService.class);
+        intSer.setAction(ACTION_STOP_FOREGROUND_SERVICE);
+        intSer.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
 
         super.onDestroy();
     }

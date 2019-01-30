@@ -1,17 +1,14 @@
 package com.example.cpu11268.musicapp.Notification;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
@@ -31,11 +28,11 @@ public class NotificationGenerator {
     public static final String NOTIFY_PLAY = "com.example.cpu11268.musicapp.Notification.play";
 
     public static final String NOTIFY_NEXT = "com.example.cpu11268.musicapp.Notification.next";
-    private static final int NOTIFICATION_ID_CUSTOM_BIG = 0;
+    private static final int NOTIFICATION_ID_CUSTOM_BIG = 1;
     private static final int ID_PENDING = 1;
 
     private static Intent intent;
-    private static NotificationCompat.Builder nc;
+    private static Notification nc;
     private static RemoteViews expandedViewSmall;
     private static NotificationManager nm;
     private static Track trackInfo;
@@ -46,23 +43,19 @@ public class NotificationGenerator {
         expandedViewSmall.setTextViewText(R.id.nameSong, track.getName());
         PendingIntent pendingIntent =
                 getCommentPendingIntent(context, pathLoad, isLocalAreaLoad);
-        nc.setContentIntent(pendingIntent);
-//        nc.contentIntent = pendingIntent;
-
-        nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc.build());
+        nc.contentIntent = pendingIntent;
+        nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
     }
 
     public static void updateButtonPlay(boolean isPlay) {
         if (isPlay) {
             expandedViewSmall.setImageViewResource(R.id.play, R.drawable.pause_icon);
-            Notification noti = nc.build();
-            noti.flags = FLAG_ONGOING_EVENT;
-            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, noti);
+            nc.flags = FLAG_ONGOING_EVENT; //?
+            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
         } else {
             expandedViewSmall.setImageViewResource(R.id.play, R.drawable.play_icon);
-            Notification noti = nc.build();
-            noti.flags = FLAG_AUTO_CANCEL;
-            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, noti);
+            nc.flags = FLAG_AUTO_CANCEL; //?
+            nm.notify(NOTIFICATION_ID_CUSTOM_BIG, nc);
         }
 
     }
@@ -80,43 +73,30 @@ public class NotificationGenerator {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("STATE_LOAD", isLocalAreaLoad);
         intent.putExtra(DATA_TRACK, trackInfo.getId());
-        intent.putExtra(EXTRA_DATA,pathLoad);
+        intent.putExtra(EXTRA_DATA, pathLoad);
         intent.putExtra(STATE_START_ACTIVITY_PLAY_MUSIC, false);
         return PendingIntent.getActivity(context,
                 ID_PENDING, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @SuppressLint("RestrictedApi")
-    public static void customBigNotification(Context context, Track track, String pathLoad, boolean isLocalAreaLoad) {
+    public static Notification customBigNotification(Context context, Track track, String pathLoad, boolean isLocalAreaLoad) {
         trackInfo = track;
-
         expandedViewSmall = new RemoteViews(context.getPackageName(), R.layout.small_notification);
-        expandedViewSmall.setImageViewResource(R.id.play, R.drawable.pause_icon);
 
-        nc = new NotificationCompat.Builder(context);
-//        nc = new Notification.Builder(context).setContentTitle("Music App").build();
+        nc = new Notification.Builder(context).build();
         nm = (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
-
-        Intent notifyIntent = new Intent(context, ListTrackActivity.class);
-        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent = new Intent(context, PlayMusicActivity.class);
 
         PendingIntent pendingIntent =
                 getCommentPendingIntent(context, pathLoad, isLocalAreaLoad);
-        nc.setContentTitle("Music App");
-        nc.setContentIntent(pendingIntent);
-//        nc.setCustomContentView(expandedViewSmall);
-//        nc.setCustomHeadsUpContentView(expandedViewSmall);
-        nc.setSmallIcon(R.drawable.default_image);
-        nc.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image));
-        nc.setCustomBigContentView(expandedViewSmall);
-        Notification noti = nc.build();
-        noti.flags = FLAG_ONGOING_EVENT;
-//        nc.contentIntent = pendingIntent;
-//        nc.contentView = expandedViewSmall;
-//        nc.flags = FLAG_ONGOING_EVENT;
-//        nc.icon = R.drawable.default_image;
-//        nc.largeIcon = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
+
+        nc.contentIntent = pendingIntent;
+        nc.bigContentView = expandedViewSmall;
+        nc.flags = FLAG_AUTO_CANCEL;
+        nc.icon = R.drawable.default_image;
+        nc.largeIcon = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
+        nc.priority = Notification.PRIORITY_MAX;
+
         if (TextUtils.isEmpty(track.getmImage().trim())) {
             expandedViewSmall.setImageViewResource(R.id.image, R.drawable.default_image);
         }
@@ -132,8 +112,7 @@ public class NotificationGenerator {
 
         setListeners(expandedViewSmall
                 , context);
-
-        ((Service) context).startForeground(NOTIFICATION_ID_CUSTOM_BIG, nc);  //? stop?
+        return nc;
 
     }
 
@@ -150,6 +129,7 @@ public class NotificationGenerator {
 
         PendingIntent pNext = PendingIntent.getBroadcast(context, 0, next, PendingIntent.FLAG_UPDATE_CURRENT);
         view.setOnClickPendingIntent(R.id.next, pNext);
+
 
     }
 }

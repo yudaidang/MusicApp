@@ -3,6 +3,8 @@ package com.example.cpu11268.musicapp.Main.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -11,25 +13,47 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.cpu11268.musicapp.Adapter.FileChooseAdapter;
+import com.example.cpu11268.musicapp.Constant;
 import com.example.cpu11268.musicapp.R;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 
-public class SelectFileActivity extends BaseActivity implements ISelectFileInterface {
+public class SelectFileActivity extends BaseActivity implements ISelectFileInterface, Handler.Callback {
     private String rootPath, nowPath;
     private RecyclerView recyclerView;
     private FileChooseAdapter mAdapter;
     private ImageView back, close;
     private TextView path;
+    private Handler mHandler;
+
+    private void getListFiles(final String path) {
+        new Thread() {
+            @Override
+            public void run() {
+                ArrayList<String> result = new ArrayList<>();
+                File folder = new File(path);
+                File[] filesInFolder = folder.listFiles();
+                for (File file : filesInFolder) {
+                    if (file.isDirectory()) {
+                        result.add(new String(file.getAbsolutePath()));
+                    }
+                }
+                Message message = mHandler.obtainMessage(Constant.LOAD_LIST_FILE, result);
+                message.sendToTarget();
+            }
+        }.start();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_file);
         init();
+        mHandler = new Handler(this);
 
         rootPath = Environment.getExternalStorageDirectory().getPath().toString();
         path.setText(rootPath);
@@ -52,7 +76,7 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
                     }
                     path.setText(temp);
                     nowPath = temp;
-                    mAdapter.setData(getListFiles(nowPath));  //? setup on main thread?
+                    getListFiles(nowPath);
                 }
             }
         });
@@ -60,7 +84,7 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
         recyclerView.setLayoutManager(manager);
         mAdapter = new FileChooseAdapter(this, this);
         recyclerView.setAdapter(mAdapter);
-        mAdapter.setData(getListFiles(rootPath));  //? setup on main thread?
+        getListFiles(rootPath);
     }
 
     private void init() {
@@ -71,33 +95,27 @@ public class SelectFileActivity extends BaseActivity implements ISelectFileInter
 
     }
 
-    private ArrayList<String> getListFiles(String path) { //? bg worker ?
-        ArrayList<String> result = new ArrayList<>();
-        File folder = new File(path);
-        File[] filesInFolder = folder.listFiles();
-        for (File file : filesInFolder) {
-            if (file.isDirectory()) {
-                result.add(new String(file.getAbsolutePath()));
-            }
-        }
-
-        return result;
-    }
-
     @Override
     public void choosedFolder(String path) {
         Intent intent = new Intent();
         intent.putExtra(EXTRA_DATA, path);
         setResult(RESULT_OK, intent);
         finish();
-
-        //return result
     }
 
     @Override
     public void goFolder(String path) {
         this.nowPath = path;
-        mAdapter.setData(getListFiles(path));
+        getListFiles(path);
         this.path.setText(path);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        if (msg.what == Constant.LOAD_LIST_FILE) {
+            mAdapter.setData((List<String>) msg.obj);
+            return true;
+        }
+        return false;
     }
 }

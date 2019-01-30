@@ -30,7 +30,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
                 break;
             case 1:
                 fragment = new TrackListFragment();
-                ((TrackListFragment)fragment).setData(pathLoad, isAreaTrack, track.getId());
+                ((TrackListFragment)fragment).setData(pathLoad, isAreaTrack);
 
                 break;
         }

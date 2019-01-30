@@ -10,22 +10,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.cpu11268.musicapp.Constant;
 import com.example.cpu11268.musicapp.Listener.ItemClickListener;
 import com.example.cpu11268.musicapp.Main.Activity.PlayMusicActivity;
 import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.R;
+import com.example.cpu11268.musicapp.Service.PlaySongService;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
 import com.example.cpu11268.musicapp.ViewHolder.TrackHolder;
 import com.example.imageloader.ImageLoader;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static com.example.cpu11268.musicapp.Constant.ACTION_START_FOREGROUND_SERVICE;
+import static com.example.cpu11268.musicapp.Constant.ACTION_STOP_FOREGROUND_SERVICE;
 import static com.example.cpu11268.musicapp.Constant.BACK_LIST_TRACK;
 import static com.example.cpu11268.musicapp.Constant.DATA_TRACK;
 import static com.example.cpu11268.musicapp.Constant.EXTRA_DATA;
 import static com.example.cpu11268.musicapp.Constant.STATE_START_ACTIVITY_PLAY_MUSIC;
+import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.NOTIFY_PLAY;
 
 public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
@@ -36,6 +42,8 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
     private boolean isAreaLoad = false;
     private String pathLoad;
     private boolean isPlay = true;
+    private int position = -1;
+
 
     public TrackAdapter(Activity context, String flag) {
         this.context = context;
@@ -66,6 +74,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
         if (trackSelect != null && TextUtils.equals(track.getStreamUrl(), trackSelect.getStreamUrl())) {
             holder.getmMenu().setVisibility(View.VISIBLE);
             holder.getmMenu().pauseOrPlay(isPlay);
+            this.position = position;
         } else {
             holder.getmMenu().setVisibility(View.GONE);
         }
@@ -76,7 +85,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
             @Override
             public void onClick(View view, int position, boolean isLongClick) { //?
                 DataTrack.getInstance().setTracks(tracks);
+
                 if (TextUtils.equals(flag, "ListTrackActivity")) {
+
                     Intent intent = new Intent(context, PlayMusicActivity.class);
                     intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
                     Bundle bundle = new Bundle();
@@ -85,7 +96,13 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
                     bundle.putString(DATA_TRACK, track.getId());
                     if (trackSelect != null && TextUtils.equals(trackSelect.getId(), track.getId())) {
                         bundle.putBoolean(STATE_START_ACTIVITY_PLAY_MUSIC, false);
+
                     } else {
+                        Intent intSer = new Intent(context, PlaySongService.class);
+                        intSer.setAction(NOTIFY_PLAY);
+                        intSer.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
+
+                        context.startService(intSer);
                         bundle.putBoolean(STATE_START_ACTIVITY_PLAY_MUSIC, true);
                     }
                     intent.putExtras(bundle);
@@ -94,15 +111,17 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
                 } else {
                     if (context instanceof PlayMusicActivity) {
-                        PlayMusicActivity myactivity = (PlayMusicActivity) context;  //?
+                        WeakReference<PlayMusicActivity> myactivity = new WeakReference<>((PlayMusicActivity) context) ;
                         if (trackSelect != null && TextUtils.equals(trackSelect.getId(), track.getId())) {
-                            myactivity.setUpSong(track.getId(), false); //?
-//                            myactivity.setUpTrackNotChange(track.getId());
+                            myactivity.get().setUpSong(track.getId(), false); //?
                         } else {
-                            myactivity.setUpSong(track.getId(), true); //?
-//                            myactivity.setUpTrack(track.getId(), 1);
-                        }
-                    }
+                            Intent intSer = new Intent(context, PlaySongService.class);
+                            intSer.setAction(NOTIFY_PLAY);
+                            intSer.putExtra(Constant.UPDATE_SONG_CHANGE_STREAM, track);
+
+                            context.startService(intSer);
+                            myactivity.get().setUpSong(track.getId(), true); //?
+                        }                    }
                 }
             }
         });
@@ -144,7 +163,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
     public void setPlay(boolean isPlay) {
         this.isPlay = isPlay;
-        notifyDataSetChanged(); //? opt
+        notifyItemChanged(position);
     }
 
 }

@@ -3,6 +3,11 @@ package com.example.cpu11268.musicapp;
 public class Constant {
     public static final String DATA_TRACK = "track";
     public static final int LOAD_API = 1;
+    public static final int LOAD_LIST_FILE = 2;
+    public static final String ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE";
+
+    public static final int LOAD_LIST_TRACK = 4;
+
     public static final int LOAD_TRACKLOCAL = 5;
     public static final int FINISH_DOWNLOAD_STREAM = 3;
     public static final String CALL_FROM_TRACK_LIST_ACTIVITY = "CALL_FROM_TRACK_LIST_ACTIVITY";
@@ -43,5 +48,6 @@ public class Constant {
 
     //Notification
     public static final int PLAY_MUSIC_MEDIA = 11;
+    public static final String ACTION_STOP_FOREGROUND_SERVICE = "ACTION_STOP_FOREGROUND_SERVICE";
 
 }

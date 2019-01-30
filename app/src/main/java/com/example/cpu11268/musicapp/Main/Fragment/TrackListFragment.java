@@ -35,6 +35,8 @@ import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.R;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.app.Activity.RESULT_OK;
 import static android.view.View.GONE;
@@ -48,7 +50,7 @@ import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI_COMMUNICATE;
 
-public class TrackListFragment extends Fragment implements ITrackListContract.View, Handler.Callback {
+public class TrackListFragment extends Fragment implements ITrackListContract.View{
     TrackListPresenter mPresenter = new TrackListPresenter();
     private ProgressBar loading;
     private RecyclerView recyclerView;
@@ -58,33 +60,37 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
     private TextView txtLoading;
     private Context context;
     private Track selectTrack;
-    private BroadcastReceiver broadcastUpdateInfo = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent bufferIntent) { //? opt
-            updateInfo(bufferIntent);
-        }
-    };
+    private Timer timer = new Timer();
+    private final long DELAY = 500; // milliseconds
 
-    private BroadcastReceiver broadcastUpdateUi = new BroadcastReceiver() {
+    //
+    private BroadcastReceiver broadcastUpdate = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent serviceIntent) {  //? opt
-            updateUI(serviceIntent);
+        public void onReceive(Context context, Intent bufferIntent) {
+            updateContent(bufferIntent);
         }
     };
+    private void updateContent(Intent intent) {
+        if(TextUtils.equals(intent.getAction(), UPDATEINFO)){
+            updateTrackInfo(intent);
+        }
+        if(TextUtils.equals(intent.getAction(), UPDATE_UI_COMMUNICATE)){
+            updateStateButtonPlay(intent);
+        }
+    }
+    //
+
     private boolean isAreaLoading = false;
     private String pathLoad;
-    private String idTrack;
-    private Handler handler;
 
-    private void updateUI(Intent serviceIntent) { //? clear name
+    private void updateStateButtonPlay(Intent serviceIntent) {
         boolean isPlay = serviceIntent.getBooleanExtra(UPDATE_UI, false);
         trackAdapter.setPlay(isPlay);
     }
 
-    public void setData(String pathLoad, boolean isAreaLoading, String idTrack) {
+    public void setData(String pathLoad, boolean isAreaLoading) {
         this.isAreaLoading = isAreaLoading;
         this.pathLoad = pathLoad;
-        this.idTrack = idTrack;
         mPresenter.attachView(this);
         if (loading != null) {
             loading.setVisibility(View.VISIBLE);
@@ -99,7 +105,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
         }
     }
 
-    private void updateInfo(Intent serviceIntent) { //? clear name
+    private void updateTrackInfo(Intent serviceIntent) {
         selectTrack = (Track) serviceIntent.getSerializableExtra(DATA_TRACK);
         trackAdapter.setTrack(selectTrack);
     }
@@ -107,10 +113,11 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        handler = new Handler(this);
         context = this.getContext();
-        context.registerReceiver(broadcastUpdateInfo, new IntentFilter(UPDATEINFO));//? opt
-        context.registerReceiver(broadcastUpdateUi, new IntentFilter(UPDATE_UI_COMMUNICATE));//? opt
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(UPDATEINFO);
+        intentFilter.addAction(UPDATE_UI_COMMUNICATE);
+        context.registerReceiver(broadcastUpdate, intentFilter);
 
 
     }
@@ -196,13 +203,26 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //? opt: delay time
-                if (!TextUtils.isEmpty(s.toString())) {
+                final CharSequence content = s;
+                timer.cancel();
+                timer = new Timer();
+                if (!TextUtils.isEmpty(content.toString())) {
                     btnClose.setVisibility(View.VISIBLE);
                 } else {
                     btnClose.setVisibility(GONE);
                 }
-                mPresenter.search(s.toString());
+                timer.schedule(
+                        new TimerTask() {
+                            @Override
+                            public void run() {
+                                // TODO: do what you need here (refresh list)
+                                // you will probably need to use runOnUiThread(Runnable action) for some specific actions
+                                mPresenter.search(content.toString());
+                            }
+                        },
+                        DELAY
+                );
+
             }
 
             @Override
@@ -259,13 +279,7 @@ public class TrackListFragment extends Fragment implements ITrackListContract.Vi
     @Override
     public void onDestroy() {
         super.onDestroy();
-        context.unregisterReceiver(broadcastUpdateInfo);
-        context.unregisterReceiver(broadcastUpdateUi);
-    }
+        context.unregisterReceiver(broadcastUpdate);
 
-
-    @Override
-    public boolean handleMessage(Message message) {
-        return false;
     }
 }

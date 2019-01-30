@@ -4,8 +4,8 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.example.cpu11268.musicapp.Constant;
-import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.Main.Views.ITrackListContract;
+import com.example.cpu11268.musicapp.Model.Track;
 import com.example.cpu11268.musicapp.Runnable.GetTrackLocal;
 import com.example.cpu11268.musicapp.Runnable.LoadApiRunnable;
 import com.example.cpu11268.musicapp.Utils.DataTrack;
@@ -34,22 +34,26 @@ public class TrackListPresenter extends BasePresenter<ITrackListContract.View> i
     }
 
     @Override
-    public void search(String key) {
-        List<Track> tracks = DataTrack.getInstance().getTracks();
-        if (tracks == null) {
-            return; //? then?
+    public void search(final String key) {
+        final List<Track> tracks = DataTrack.getInstance().getTracks();
+        if (tracks != null) {
+            new Thread() {
+                @Override
+                public void run() {
+                    List<Track> results = new ArrayList<>();
+                    String trimKey = key.replaceAll("\\s{2,}", " ").trim();
+                    String[] splitKeys = trimKey.toLowerCase().split(" ");
+                    for (Track track : tracks) {
+                        if (checkContain(splitKeys, track.getName())) {
+                            results.add(track);
+                        }
+                    }
+                    Message message = mHandler.obtainMessage(Constant.LOAD_LIST_TRACK, results);
+                    message.sendToTarget();
+                }
+            }.start();
+            return;
         }
-
-        //? should bg worker?
-        List<Track> results = new ArrayList<>();
-        String trimKey = key.replaceAll("\\s{2,}", " ").trim();
-        String[] splitKeys = trimKey.toLowerCase().split(" ");
-        for (Track track : tracks) {
-            if (checkContain(splitKeys, track.getName())) {
-                results.add(track);
-            }
-        }
-        mView.showData(results); //? mView?
     }
 
     private boolean checkContain(String[] splitKey, String name) {
@@ -67,8 +71,8 @@ public class TrackListPresenter extends BasePresenter<ITrackListContract.View> i
         if (msg.what == Constant.LOAD_API) {
             mView.showData((List<Track>) msg.obj);
             return true;
-        }else if(msg.what == LOAD_TRACKLOCAL){
-            List<Track> tracks = (List<Track>)msg.obj;
+        } else if (msg.what == LOAD_TRACKLOCAL) {
+            List<Track> tracks = (List<Track>) msg.obj;
             mView.showData(tracks);
             return true;
         }

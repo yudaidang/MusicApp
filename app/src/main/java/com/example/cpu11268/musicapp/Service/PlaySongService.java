@@ -12,6 +12,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.cpu11268.musicapp.Constant;
 import com.example.cpu11268.musicapp.Model.Track;
@@ -40,6 +41,9 @@ import static com.example.cpu11268.musicapp.Constant.UPDATEINFO;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_SONG_CHANGE_STREAM;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI;
 import static com.example.cpu11268.musicapp.Constant.UPDATE_UI_COMMUNICATE;
+import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.NOTIFY_NEXT;
+import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.NOTIFY_PLAY;
+import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.NOTIFY_PREVIOUS;
 import static com.example.cpu11268.musicapp.Notification.NotificationGenerator.cancelNoti;
 
 public class PlaySongService extends Service implements MediaPlayer.OnCompletionListener,
@@ -57,6 +61,7 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
     private List<Future<?>> futures = new ArrayList<Future<?>>();
     private BlockingQueue queueDisk;
     private boolean isRepeat = false;
+    private boolean isRunning = false;
     // Seekbar
     private int mediaPosition;
     //Intent
@@ -146,7 +151,17 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
         }
 
     }
+    private void startForegroundService(Track track) {
+        isRunning = true;
+        startForeground(1,
+                NotificationGenerator.customBigNotification(this, track, pathLoad, isLocalAreaLoad));
+    }
 
+    private void stopForegroundService() {
+        isRunning = false;
+        stopForeground(true);
+        stopSelf();
+    }
     private void LogMediaPosition() {
         if (mediaPlayer.isPlaying()) {
             mediaPosition = mediaPlayer.getCurrentPosition();
@@ -238,7 +253,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
                     queueDisk);
         }
 
-        binder = new MyBinder(); // do MyBinder được extends Binder
 
         if (!successfullyRetrievedAudioFocus()) {
             return;
@@ -255,6 +269,39 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        bufferIntent = new Intent(BROADCAST_BUFFER);
+        updateUi = new Intent(UPDATE_UI_COMMUNICATE);
+        updateInfoSong = new Intent(UPDATEINFO);
+        //set up intent seek for seekbar broadcast
+        seekIntent = new Intent(BROADCAST_ACTION);
+        mediaPlayer.setOnCompletionListener(this);
+        mediaPlayer.setOnErrorListener(this);
+        mediaPlayer.setOnPreparedListener(this);
+        mediaPlayer.setOnBufferingUpdateListener(this);
+        mediaPlayer.setOnSeekCompleteListener(this);
+        mediaPlayer.setOnInfoListener(this);
+        mediaPlayer.reset();
+
+        handler = new Handler(this);
+
+        if (intent != null) {
+            Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
+            startForegroundService(track);
+        }
+
+        if (intent.getAction().equals(NOTIFY_PLAY)) {
+            Track track = (Track) intent.getSerializableExtra(UPDATE_SONG_CHANGE_STREAM);
+            if(!isRunning){
+                startForegroundService(track);
+            }
+            Toast.makeText(this, "Service Started!", Toast.LENGTH_SHORT).show();
+
+        } else if (intent.getAction().equals(NOTIFY_NEXT)) {
+            Toast.makeText(this, "Clicked Previous!", Toast.LENGTH_SHORT)
+                    .show();
+        } else if (intent.getAction().equals(NOTIFY_PREVIOUS)) {
+            Toast.makeText(this, "Clicked Play!", Toast.LENGTH_SHORT).show();
+        }
         return START_STICKY;
 
     }
@@ -381,6 +428,8 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
             mediaPlayer.pause();
             updateUi.putExtra(UPDATE_UI, false);
             sendBroadcast(updateUi);
+            stopForeground(true);
+            isRunning = false;
             NotificationGenerator.updateButtonPlay(false);
             mIsPlay = false;
         }
@@ -472,12 +521,6 @@ public class PlaySongService extends Service implements MediaPlayer.OnCompletion
                 }
                 break;
             }
-        }
-    }
-
-    public class MyBinder extends Binder {
-        public PlaySongService getService() {
-            return PlaySongService.this;
         }
     }
 
